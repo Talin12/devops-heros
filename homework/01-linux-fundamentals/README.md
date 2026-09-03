@@ -1,4 +1,4 @@
-# Linux Fundamentals — Homework (Session 2)
+# Linux Fundamentals: Homework (Session 2)
 
 **Name:** Talin Daga
 **Enrollment No.:** 24BCS10321
@@ -9,29 +9,29 @@
 ---
 
 ## Table of Contents
-1. [Task 1 — Soft Link vs Hard Link](#task-1--soft-link-vs-hard-link)
-2. [Task 2 — `adduser` vs `useradd`](#task-2--adduser-vs-useradd)
-3. [Task 3 — `journalctl`](#task-3--journalctl)
-4. [Task 4 — Linux Command Cheat Sheet](#task-4--linux-command-cheat-sheet)
+1. [Task 1 - Soft Link vs Hard Link](#task-1-soft-link-vs-hard-link)
+2. [Task 2 - `adduser` vs `useradd`](#task-2-adduser-vs-useradd)
+3. [Task 3 - `journalctl`](#task-3-journalctl)
+4. [Task 4 - Linux Command Cheat Sheet](#task-4-linux-command-cheat-sheet)
 5. [Interview Questions & Answers](#interview-questions--answers)
 
 ---
 
-## Task 1 — Soft Link vs Hard Link
+## Task 1: Soft Link vs Hard Link
 
 ### Theory
 
 A file on Linux is really two things:
-* the **inode** — the actual metadata + pointers to the data blocks on disk
-* the **directory entry (filename)** — a label that points at an inode
+* the **inode** - the actual metadata + pointers to the data blocks on disk
+* the **directory entry (filename)** - a label that points at an inode
 
 | | Hard Link | Soft Link (Symbolic Link) |
 |---|---|---|
 | Command | `ln target linkname` | `ln -s target linkname` |
 | What it points to | the **inode** (the data itself) | the **pathname** (a string) |
 | Inode number | **same** as the original | its **own** new inode |
-| Link count (`ls -l` 2nd column) | increases (2, 3, …) | stays 1 |
-| If the original is deleted | link **still works** — data survives | link **breaks** (dangling) |
+| Link count (`ls -l` 2nd column) | increases (2, 3, ...) | stays 1 |
+| If the original is deleted | link **still works** - data survives | link **breaks** (dangling) |
 | Across filesystems / partitions | ❌ not allowed | ✅ allowed |
 | Point to a directory | ❌ not allowed | ✅ allowed |
 | Size shown by `ls -l` | size of the file | length of the target path string |
@@ -56,7 +56,7 @@ rm softlink.txt
 unlink softlink.txt
 ```
 
-### Practical — commands and output
+### Practical: commands and output
 
 ```console
 ########## TASK 1 : SOFT LINK (symlink) vs HARD LINK ##########
@@ -149,33 +149,33 @@ total 0
 
 ### What the output proves
 
-* `original.txt` and `hardlink.txt` both show inode **1038958** and link count **2** — they are two names for **one** file.
+* `original.txt` and `hardlink.txt` both show inode **1038958** and link count **2** - they are two names for **one** file.
 * `softlink.txt` has its own inode **1038972**, type `symbolic link`, and size **12** (= the number of characters in the string `original.txt`).
-* Appending through `hardlink.txt` changed what `original.txt` shows — same data, same inode.
-* After `rm original.txt`: `cat hardlink.txt` still works, `cat softlink.txt` gives **No such file or directory** — the soft link is now dangling.
-* `ln /root/mydir dirhardlink` → **hard link not allowed for directory**, while `ln -s` on a directory works fine.
+* Appending through `hardlink.txt` changed what `original.txt` shows - same data, same inode.
+* After `rm original.txt`: `cat hardlink.txt` still works, `cat softlink.txt` gives **No such file or directory** - the soft link is now dangling.
+* `ln /root/mydir dirhardlink` -> **hard link not allowed for directory**, while `ln -s` on a directory works fine.
 
 ---
 
-## Task 2 — `adduser` vs `useradd`
+## Task 2: `adduser` vs `useradd`
 
 ### Theory
 
 | | `useradd` | `adduser` |
 |---|---|---|
 | Type | low-level **binary** (`/usr/sbin/useradd`, part of `shadow-utils`) | high-level **Perl script** that wraps `useradd` |
-| Available on | every Linux distro (RHEL, CentOS, Ubuntu, Debian, Alpine…) | Debian / Ubuntu family |
+| Available on | every Linux distro (RHEL, CentOS, Ubuntu, Debian, Alpine...) | Debian / Ubuntu family |
 | Home directory | **not** created unless you pass `-m` | created automatically |
 | `/etc/skel` dotfiles copied | only with `-m` | automatically |
 | Shell | distro default (often `/bin/sh`) unless `-s` is passed | `/bin/bash` |
 | Password | not set (account locked) | prompts interactively |
 | User group | needs flags | creates a matching group automatically |
-| Interactive | no | yes (asks for password, full name, phone…) |
+| Interactive | no | yes (asks for password, full name, phone...) |
 | Config file | `/etc/default/useradd`, `/etc/login.defs` | `/etc/adduser.conf` |
 
 ### Which one is preferred on Ubuntu, and why
 
-**`adduser` is preferred on Ubuntu/Debian.** It is the friendly, interactive front-end that does all the right things in one step — creates the home directory, copies the `/etc/skel` skeleton files (`.bashrc`, `.profile`, `.bash_logout`), sets `/bin/bash` as the login shell, creates a matching user-private group, and prompts for a password. With plain `useradd` you get a half-configured account unless you remember every flag, which is a very common source of "why can't the new user log in?" tickets.
+**`adduser` is preferred on Ubuntu/Debian.** It is the friendly, interactive front-end that does all the right things in one step - creates the home directory, copies the `/etc/skel` skeleton files (`.bashrc`, `.profile`, `.bash_logout`), sets `/bin/bash` as the login shell, creates a matching user-private group, and prompts for a password. With plain `useradd` you get a half-configured account unless you remember every flag, which is a very common source of "why can't the new user log in?" tickets.
 
 `useradd` is still the right choice **inside scripts and Dockerfiles**, and on RHEL/CentOS where `adduser` may not exist (there it is often just a symlink to `useradd`).
 
@@ -201,7 +201,7 @@ sudo deluser --remove-home testuser      # Debian/Ubuntu
 sudo userdel -r testuser                 # portable
 ```
 
-### Practical — commands and output
+### Practical: commands and output
 
 ```console
 ########## TASK 2 : adduser vs useradd ##########
@@ -301,14 +301,14 @@ _apt:x:100:65534::/nonexistent:/usr/sbin/nologin
 
 ### What the output proves
 
-* `useradd testuser1` → the account exists in `/etc/passwd` but `/home` is **empty**, the shell is `/bin/sh`, and `passwd -S` reports **`L`** (locked, no password).
-* `useradd -m -s /bin/bash` → now the home directory exists, but every behaviour had to be requested with a flag.
-* `adduser` → printed exactly what it did: created the group, created the user, **created the home directory**, and **copied files from `/etc/skel`** (`ls -a` shows `.bashrc`, `.profile`, `.bash_logout`). Shell is `/bin/bash` with zero extra flags.
-* `head -1 /usr/sbin/adduser` shows `#!/usr/bin/perl` — proof that `adduser` is a script, whereas `useradd` is a compiled binary (126 KB vs 38 KB in `ls -l`).
+* `useradd testuser1` -> the account exists in `/etc/passwd` but `/home` is **empty**, the shell is `/bin/sh`, and `passwd -S` reports **`L`** (locked, no password).
+* `useradd -m -s /bin/bash` -> now the home directory exists, but every behaviour had to be requested with a flag.
+* `adduser` -> printed exactly what it did: created the group, created the user, **created the home directory**, and **copied files from `/etc/skel`** (`ls -a` shows `.bashrc`, `.profile`, `.bash_logout`). Shell is `/bin/bash` with zero extra flags.
+* `head -1 /usr/sbin/adduser` shows `#!/usr/bin/perl` - proof that `adduser` is a script, whereas `useradd` is a compiled binary (126 KB vs 38 KB in `ls -l`).
 
 ---
 
-## Task 3 — `journalctl`
+## Task 3: `journalctl`
 
 ### What journalctl is used for
 
@@ -346,7 +346,7 @@ Instead of hunting through `/var/log/syslog`, `/var/log/nginx/error.log`, `/var/
 
 **Priority levels:** `0 emerg, 1 alert, 2 crit, 3 err, 4 warning, 5 notice, 6 info, 7 debug`
 
-### Practical — commands and output
+### Practical: commands and output
 
 Run on a real systemd system (systemd is PID 1), checking the logs of the **nginx** service:
 
@@ -547,16 +547,16 @@ Sep 03 09:30:33 c737b4436fd2 systemd[1]: Started A high performance web server a
 
 ### What the output proves
 
-* `ps -p 1 -o comm` → **systemd** is PID 1, so the journal is live.
-* `journalctl -u nginx` shows the full lifecycle of one service — *Starting → Started → Stopping → Deactivated successfully → Stopped → Starting → Started* — which is exactly how you confirm a restart actually happened.
+* `ps -p 1 -o comm` -> **systemd** is PID 1, so the journal is live.
+* `journalctl -u nginx` shows the full lifecycle of one service - *Starting -> Started -> Stopping -> Deactivated successfully -> Stopped -> Starting -> Started* - which is exactly how you confirm a restart actually happened.
 * `journalctl -p err` returned **`-- No entries --`**: no errors on the box, which is itself a useful answer.
 * `--list-boots` shows the current boot ID and its time window.
-* `-o json-pretty` shows the journal is **structured**: every entry carries `_SYSTEMD_UNIT`, `_PID`, `PRIORITY`, `_HOSTNAME`, `MESSAGE_ID` etc. — that is what makes filtering fast and what log shippers consume.
+* `-o json-pretty` shows the journal is **structured**: every entry carries `_SYSTEMD_UNIT`, `_PID`, `PRIORITY`, `_HOSTNAME`, `MESSAGE_ID` etc. - that is what makes filtering fast and what log shippers consume.
 * `journalctl -f` streamed the nginx restart live while it was happening.
 
 ---
 
-## Task 4 — Linux Command Cheat Sheet
+## Task 4: Linux Command Cheat Sheet
 
 ### Reference table
 
@@ -592,7 +592,7 @@ chmod 754 file
        └──── owner  : 7 = rwx
 ```
 
-### Practical — commands and output
+### Practical: commands and output
 
 ```console
 ########## TASK 4 : LINUX COMMAND CHEAT SHEET - PRACTICE ##########
@@ -913,7 +913,7 @@ var
 ## Interview Questions & Answers
 
 **Q1. What is the difference between a soft link and a hard link?**
-A hard link is a second **directory entry pointing at the same inode**, so it is indistinguishable from the original file — same inode number, same data, and the file's link count goes up. The data is only freed when the last hard link is removed, so deleting the "original" does not break the other name. A soft link is a tiny separate file whose *content is a path string*; it has its own inode and simply redirects to that path. If the target is renamed or deleted, the soft link dangles. Hard links cannot cross filesystems and cannot point at directories; soft links can do both.
+A hard link is a second **directory entry pointing at the same inode**, so it is indistinguishable from the original file - same inode number, same data, and the file's link count goes up. The data is only freed when the last hard link is removed, so deleting the "original" does not break the other name. A soft link is a tiny separate file whose *content is a path string*; it has its own inode and simply redirects to that path. If the target is renamed or deleted, the soft link dangles. Hard links cannot cross filesystems and cannot point at directories; soft links can do both.
 
 **Q2. Why can't a hard link cross a filesystem?**
 Because inode numbers are only unique *within* one filesystem. A directory entry stores an inode number, and that number is meaningless on another filesystem, so the kernel refuses (`Invalid cross-device link`).
@@ -921,27 +921,14 @@ Because inode numbers are only unique *within* one filesystem. A directory entry
 **Q3. Why are hard links to directories forbidden?**
 They would let you create loops in the directory tree (a directory reachable from inside itself), which would break `find`, `rm -r`, and filesystem-consistency tools. Only the kernel makes directory hard links, for `.` and `..`.
 
-**Q4. `adduser` or `useradd` — which should I use on Ubuntu and why?**
-`adduser`, because it is the Debian/Ubuntu policy-compliant front-end: it creates the home directory, copies `/etc/skel`, sets `/bin/bash`, creates the user-private group, and prompts for a password in one step. `useradd` is the low-level binary — portable to every distro and the right choice inside scripts and Dockerfiles, but it silently creates a half-usable account unless you pass `-m -s …` yourself.
+**Q4. `adduser` or `useradd` - which should I use on Ubuntu and why?**
+`adduser`, because it is the Debian/Ubuntu policy-compliant front-end: it creates the home directory, copies `/etc/skel`, sets `/bin/bash`, creates the user-private group, and prompts for a password in one step. `useradd` is the low-level binary - portable to every distro and the right choice inside scripts and Dockerfiles, but it silently creates a half-usable account unless you pass `-m -s ...` yourself.
 
 **Q5. Where do I look when a service fails to start?**
 `systemctl status <service>` for the summary, then `journalctl -u <service> -n 100 --no-pager` for the detail, `journalctl -u <service> -f` to watch a restart live, and `journalctl -p err -b` for every error since boot.
 
 **Q6. How do you see logs from the boot before the machine crashed?**
-`journalctl -b -1` (`--list-boots` to see what is available). This requires a *persistent* journal — `/var/log/journal` must exist, i.e. `Storage=persistent` in `/etc/systemd/journald.conf`.
+`journalctl -b -1` (`--list-boots` to see what is available). This requires a *persistent* journal - `/var/log/journal` must exist, i.e. `Storage=persistent` in `/etc/systemd/journald.conf`.
 
 **Q7. What does `chmod 754` mean?**
 Owner `rwx` (7), group `r-x` (5), others `r--` (4).
-
----
-
-## Screenshots (optional extras)
-
-All evidence above is real terminal output. If you also want screenshots, drop them in [`screenshots/`](screenshots/) using these names and uncomment the lines below:
-
-<!--
-![Soft link vs hard link](screenshots/01-links.png)
-![adduser vs useradd](screenshots/02-adduser-useradd.png)
-![journalctl service logs](screenshots/03-journalctl.png)
-![Cheat sheet practice](screenshots/04-cheatsheet.png)
--->

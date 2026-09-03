@@ -1,4 +1,4 @@
-# Networking Fundamentals — Homework (Session 4)
+# Networking Fundamentals: Homework (Session 4)
 
 **Name:** Talin Daga
 **Enrollment No.:** 24BCS10321
@@ -39,17 +39,17 @@ NAME="Ubuntu"
 
 ---
 
-## 1. `ip a` / `ifconfig` — interfaces and IP addresses
+## 1. `ip a` / `ifconfig`: interfaces and IP addresses
 
 **What it does:** lists every network interface and the IP addresses bound to them. `ip` (from `iproute2`) is the modern tool; `ifconfig` (from `net-tools`) is the older one you still meet on legacy boxes.
 
 **What I understood from the output:**
-* `lo` is the **loopback** interface, always `127.0.0.1/8` — traffic to yourself never leaves the machine.
-* `eth0` is the real interface with **`172.17.0.11/16`**. The `/16` is the **CIDR prefix**: 16 network bits, 16 host bits, so the netmask is `255.255.0.0` and the network is `172.17.0.0` — a **Class B private range**.
+* `lo` is the **loopback** interface, always `127.0.0.1/8` - traffic to yourself never leaves the machine.
+* `eth0` is the real interface with **`172.17.0.11/16`**. The `/16` is the **CIDR prefix**: 16 network bits, 16 host bits, so the netmask is `255.255.0.0` and the network is `172.17.0.0` - a **Class B private range**.
 * `link/ether 26:bc:ce:39:4f:d3` is the **MAC address** (layer 2), while the `inet` line is the **IP address** (layer 3).
-* `<BROADCAST,MULTICAST,UP,LOWER_UP>` — `UP` means administratively enabled, `LOWER_UP` means the cable/link is actually live. If you ever see `UP` without `LOWER_UP`, the link is down.
+* `<BROADCAST,MULTICAST,UP,LOWER_UP>` - `UP` means administratively enabled, `LOWER_UP` means the cable/link is actually live. If you ever see `UP` without `LOWER_UP`, the link is down.
 * `mtu 65535` is the largest frame the interface will send in one piece.
-* `ip -brief address show` is the version I actually use day to day — the same information in one line per interface.
+* `ip -brief address show` is the version I actually use day to day - the same information in one line per interface.
 
 ### Output
 
@@ -117,13 +117,13 @@ ip6gre0@NONE     DOWN
 eth0@if3325      UP             172.17.0.11/16
 ```
 
-## 2. `ip route` / `route -n` — the routing table
+## 2. `ip route` / `route -n`: the routing table
 
 **What it does:** shows how the kernel decides where to send a packet. Every packet is matched against this table, most-specific route first.
 
 **What I understood from the output:**
-* `default via 172.17.0.1 dev eth0` — the **default gateway**. Anything that doesn't match a more specific route is handed to `172.17.0.1`. If this line is missing you can ping your LAN but not the internet, which is one of the most common "no internet" causes.
-* `172.17.0.0/16 dev eth0 proto kernel scope link` — the **directly connected** network. `scope link` means these hosts are reachable without a router, by ARP.
+* `default via 172.17.0.1 dev eth0` - the **default gateway**. Anything that doesn't match a more specific route is handed to `172.17.0.1`. If this line is missing you can ping your LAN but not the internet, which is one of the most common "no internet" causes.
+* `172.17.0.0/16 dev eth0 proto kernel scope link` - the **directly connected** network. `scope link` means these hosts are reachable without a router, by ARP.
 * `route -n` is the old `net-tools` view of the same table; `0.0.0.0` destination with flag `UG` is the default route (**U**p, **G**ateway).
 * `ip route get 8.8.8.8` is the debugging gem: instead of you reading the table, the kernel *tells you* exactly which route, interface and source IP it would use for that destination.
 
@@ -145,15 +145,15 @@ $ ip route get 8.8.8.8
     cache
 ```
 
-## 3. `ping` — is the host reachable?
+## 3. `ping`: is the host reachable?
 
 **What it does:** sends **ICMP echo request** packets and waits for echo replies. The first thing to run when "the server is down".
 
 **What I understood from the output:**
 * `0% packet loss` = the path works in both directions. Loss > 0% points at congestion or a flaky link.
 * `time=31.9 ms` is the **round-trip time (RTT)**; the summary line `rtt min/avg/max/mdev` gives the spread. A high `mdev` (jitter) is bad for calls and video even when the average looks fine.
-* `ttl=63` — packets start at TTL 64 and each router decrements it by one, so `63` means **one hop** away. TTL also stops routing loops: at 0 the packet is dropped.
-* `ping google.com` printing `PING google.com (142.251.106.138)` proves **DNS resolved first** — so a failing `ping google.com` that works as `ping 8.8.8.8` is a *DNS* problem, not a connectivity problem. That single test is the fastest way to split the two.
+* `ttl=63` - packets start at TTL 64 and each router decrements it by one, so `63` means **one hop** away. TTL also stops routing loops: at 0 the packet is dropped.
+* `ping google.com` printing `PING google.com (142.251.106.138)` proves **DNS resolved first** - so a failing `ping google.com` that works as `ping 8.8.8.8` is a *DNS* problem, not a connectivity problem. That single test is the fastest way to split the two.
 
 ### Output
 
@@ -180,14 +180,14 @@ PING google.com (142.251.106.138) 56(84) bytes of data.
 rtt min/avg/max/mdev = 32.997/34.340/36.334/1.437 ms
 ```
 
-## 4. `traceroute` — the path packets take
+## 4. `traceroute`: the path packets take
 
-**What it does:** shows the route to a destination hop by hop, by sending packets with deliberately small TTLs (1, 2, 3…) and recording who sends back the "time exceeded" message.
+**What it does:** shows the route to a destination hop by hop, by sending packets with deliberately small TTLs (1, 2, 3...) and recording who sends back the "time exceeded" message.
 
 **What I understood from the output:**
-* Hop 1 is `172.17.0.1` — my gateway, sub-millisecond, as expected.
+* Hop 1 is `172.17.0.1` - my gateway, sub-millisecond, as expected.
 * Hops 2-8 show `* * *`. That does **not** mean the network is broken (the `ping` above succeeded): it means those routers are configured not to reply to the probes, or a NAT/firewall in between drops them. Reading `* * *` as "the internet is down" is a classic beginner mistake.
-* Where traceroute genuinely helps is spotting **where latency jumps** — if hop 4 is 20 ms and hop 5 is 300 ms, that link is your problem.
+* Where traceroute genuinely helps is spotting **where latency jumps** - if hop 4 is 20 ms and hop 5 is 300 ms, that link is your problem.
 
 ### Output
 
@@ -204,17 +204,17 @@ traceroute to 8.8.8.8 (8.8.8.8), 8 hops max, 60 byte packets
  8  * * *
 ```
 
-## 5. `nslookup` / `dig` / `host` — DNS resolution
+## 5. `nslookup` / `dig` / `host`: DNS resolution
 
 **What it does:** turns names into IP addresses. `dig` is the detailed one, `nslookup` the simple one, `host` the quick one.
 
 **What I understood from the output:**
-* `nslookup google.com` shows `Server: 192.168.65.7` — **which resolver answered**, then the addresses. Multiple A records for one name = DNS-level load balancing.
+* `nslookup google.com` shows `Server: 192.168.65.7` - **which resolver answered**, then the addresses. Multiple A records for one name = DNS-level load balancing.
 * `Non-authoritative answer` means this came from a **cache**, not from Google's own authoritative nameserver.
-* `dig google.com +short` gives just the addresses — perfect inside scripts.
+* `dig google.com +short` gives just the addresses - perfect inside scripts.
 * Full `dig` output has the sections that matter for debugging: `QUESTION` (what was asked), `ANSWER` (the records, with the **TTL** = how long they may be cached), `flags`, and `Query time`.
-* `dig -x 8.8.8.8` is a **reverse lookup** (IP → name, via the PTR record).
-* `dig MX google.com` returns the **mail exchangers** — the record type matters: `A` (IPv4), `AAAA` (IPv6), `CNAME` (alias), `MX` (mail), `NS` (nameservers), `TXT` (SPF/verification).
+* `dig -x 8.8.8.8` is a **reverse lookup** (IP -> name, via the PTR record).
+* `dig MX google.com` returns the **mail exchangers** - the record type matters: `A` (IPv4), `AAAA` (IPv6), `CNAME` (alias), `MX` (mail), `NS` (nameservers), `TXT` (SPF/verification).
 
 ### Output
 
@@ -282,16 +282,16 @@ github.com has address 20.207.73.82
 github.com mail is handled by 0 github-com.mail.protection.outlook.com.
 ```
 
-## 6. `ss` / `netstat` — sockets and listening ports
+## 6. `ss` / `netstat`: sockets and listening ports
 
-**What it does:** lists sockets — what is listening, and what is connected. `ss` is the modern replacement for `netstat` and is much faster on busy machines.
+**What it does:** lists sockets - what is listening, and what is connected. `ss` is the modern replacement for `netstat` and is much faster on busy machines.
 
 **What I understood from the output:**
-* Flag by flag: `-t` TCP, `-u` UDP, `-l` only **listening** sockets, `-n` numeric (don't resolve names — much faster), `-p` show the owning process.
-* `0.0.0.0:80` means listening on **every** interface; `127.0.0.1:80` means **loopback only** — reachable from the machine itself but not from outside. That single distinction explains a huge share of "my service is up but I can't reach it" cases.
-* `ss -s` gives the socket summary — a quick look at how many connections are open and in which states.
-* State machine words worth knowing: `LISTEN` (waiting), `ESTABLISHED` (live connection), `TIME-WAIT` (recently closed, held briefly by the kernel so late packets are not misdelivered) — all visible in the `ss -tan` output below.
-* Everyday one-liner: **`ss -tulnp | grep 8080`** — "who has my port?"
+* Flag by flag: `-t` TCP, `-u` UDP, `-l` only **listening** sockets, `-n` numeric (don't resolve names - much faster), `-p` show the owning process.
+* `0.0.0.0:80` means listening on **every** interface; `127.0.0.1:80` means **loopback only** - reachable from the machine itself but not from outside. That single distinction explains a huge share of "my service is up but I can't reach it" cases.
+* `ss -s` gives the socket summary - a quick look at how many connections are open and in which states.
+* State machine words worth knowing: `LISTEN` (waiting), `ESTABLISHED` (live connection), `TIME-WAIT` (recently closed, held briefly by the kernel so late packets are not misdelivered) - all visible in the `ss -tan` output below.
+* Everyday one-liner: **`ss -tulnp | grep 8080`** - "who has my port?"
 
 ### Output
 
@@ -334,14 +334,14 @@ INET	  2         1         1
 FRAG	  0         0         0
 ```
 
-## 7. `curl` — speak HTTP from the command line
+## 7. `curl`: speak HTTP from the command line
 
 **What it does:** makes an HTTP request from the terminal. The universal way to test an API or a web server without a browser.
 
 **What I understood from the output:**
-* `curl -I` fetches **headers only** (a `HEAD` request) — enough to see the status code, the server, and the content type.
+* `curl -I` fetches **headers only** (a `HEAD` request) - enough to see the status code, the server, and the content type.
 * `HTTP/2 200` is the status line: `2xx` success, `3xx` redirect, `4xx` your fault, `5xx` the server's fault.
-* `-s` silences the progress meter, `-o /dev/null` throws the body away, and `-w` prints exactly the fields I want — the timing breakdown (`time_namelookup`, `time_connect`, `time_total`) tells me **which phase is slow**: DNS, TCP handshake, TLS, or the application.
+* `-s` silences the progress meter, `-o /dev/null` throws the body away, and `-w` prints exactly the fields I want - the timing breakdown (`time_namelookup`, `time_connect`, `time_total`) tells me **which phase is slow**: DNS, TCP handshake, TLS, or the application.
 * Other flags I use constantly: `-L` (follow redirects), `-X POST`, `-d '{{...}}'`, `-H 'Content-Type: application/json'`, `-v` (full request/response trace).
 
 ### Output
@@ -361,16 +361,16 @@ $ curl -s -o /dev/null -w 'http_code=%{http_code} dns=%{time_namelookup}s connec
 http_code=200 dns=0.003596s connect=0.034247s total=0.315295s
 ```
 
-## 8. `nc` / `telnet` — is a TCP port open?
+## 8. `nc` / `telnet`: is a TCP port open?
 
-**What it does:** answers "is this TCP port reachable?" — one layer above `ping`. A host can answer ping and still refuse the port you need.
+**What it does:** answers "is this TCP port reachable?" - one layer above `ping`. A host can answer ping and still refuse the port you need.
 
 **What I understood from the output:**
-* `nc -zv google.com 443` → **open**. `-z` just scans (sends no data), `-v` prints the result.
-* `nc -zv google.com 81 -w 3` → times out. `-w 3` caps the wait, otherwise a filtered port hangs for a long time.
+* `nc -zv google.com 443` -> **open**. `-z` just scans (sends no data), `-v` prints the result.
+* `nc -zv google.com 81 -w 3` -> times out. `-w 3` caps the wait, otherwise a filtered port hangs for a long time.
 * The distinction that matters: **connection refused** = something answered and said no (the host is up, nothing is listening) versus **timeout** = a firewall silently dropped the packets.
 * `telnet host port` is the old-school equivalent and is still handy because you can then type raw protocol commands by hand.
-* Debug ladder I follow: `ping` (is the host alive) → `nc -zv` (is the port open) → `curl` (does the application answer).
+* Debug ladder I follow: `ping` (is the host alive) -> `nc -zv` (is the port open) -> `curl` (does the application answer).
 
 ### Output
 
@@ -398,9 +398,9 @@ Connection closed by foreign host.
 **What it does:** shows the machine's own name and how it resolves names.
 
 **What I understood from the output:**
-* `hostname -I` prints the machine's IP addresses — quicker than reading `ip a`.
-* `/etc/hosts` is consulted **before** DNS. Adding a line here overrides the whole internet for that name — the standard trick for local testing, and the standard reason a name resolves "wrongly" on one machine.
-* `/etc/resolv.conf` lists the **nameservers** the resolver will ask. If DNS is broken, this file is the first place to look. In containers, Docker writes `nameserver 127.0.0.11` here — Docker's own embedded DNS server, which is what makes container-name resolution work.
+* `hostname -I` prints the machine's IP addresses - quicker than reading `ip a`.
+* `/etc/hosts` is consulted **before** DNS. Adding a line here overrides the whole internet for that name - the standard trick for local testing, and the standard reason a name resolves "wrongly" on one machine.
+* `/etc/resolv.conf` lists the **nameservers** the resolver will ask. If DNS is broken, this file is the first place to look. In containers, Docker writes `nameserver 127.0.0.11` here - Docker's own embedded DNS server, which is what makes container-name resolution work.
 
 ### Output
 
@@ -431,12 +431,12 @@ nameserver 192.168.65.7
 # Overrides: []
 ```
 
-## 10. `arp` / `ip neigh` — MAC ↔ IP on the local segment
+## 10. `arp` / `ip neigh`: MAC ↔ IP on the local segment
 
 **What it does:** shows the ARP table, the mapping between **IP addresses (layer 3)** and **MAC addresses (layer 2)** for hosts on the same segment.
 
 **What I understood from the output:**
-* Before a packet can leave, the kernel needs the destination's MAC. If it isn't cached, the host broadcasts *"who has 172.17.0.1?"* and caches the reply — that's ARP.
+* Before a packet can leave, the kernel needs the destination's MAC. If it isn't cached, the host broadcasts *"who has 172.17.0.1?"* and caches the reply - that's ARP.
 * ARP only works **inside one broadcast domain**. For anything off-subnet, the machine ARPs for the **gateway** instead, which is why the gateway is almost always in the table.
 * `ip neigh` is the modern equivalent and shows the state (`REACHABLE`, `STALE`, `DELAY`), which tells you whether the entry has been confirmed recently.
 
@@ -451,11 +451,11 @@ $ ip neigh
 172.17.0.1 dev eth0 lladdr 1e:e4:99:28:0d:3d DELAY
 ```
 
-## 11. `whois` — who owns a domain
+## 11. `whois`: who owns a domain
 
 **What it does:** queries the registry for the ownership and registration details of a domain.
 
-**What I understood from the output:** it returns the registrar (`MarkMonitor Inc.`), the **creation date** (2007-10-09), the **registry expiry date** (2026-10-09), the abuse contact, and the domain status locks such as `clientDeleteProhibited`. In practice I use it for two things: checking **when a domain expires** — a surprising number of outages are just an expired domain — and (further down the full output) reading the **authoritative nameservers**, which is the starting point for any DNS delegation problem.
+**What I understood from the output:** it returns the registrar (`MarkMonitor Inc.`), the **creation date** (2007-10-09), the **registry expiry date** (2026-10-09), the abuse contact, and the domain status locks such as `clientDeleteProhibited`. In practice I use it for two things: checking **when a domain expires** - a surprising number of outages are just an expired domain - and (further down the full output) reading the **authoritative nameservers**, which is the starting point for any DNS delegation problem.
 
 ### Output
 
@@ -475,13 +475,13 @@ $ whois github.com | head -12
    Domain Status: clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited
 ```
 
-## 12. `tcpdump` — capture packets on the wire
+## 12. `tcpdump`: capture packets on the wire
 
 **What it does:** captures packets straight off the interface. The tool you reach for when everything "looks fine" but traffic still doesn't arrive.
 
 **What I understood from the output:**
 * `-i any` captures on all interfaces, `-c 6` stops after 6 packets, `-n` skips name resolution, and `icmp` is a **BPF filter** so only ping traffic is shown.
-* Seeing `ICMP echo request` **and** `echo reply` proves traffic flows in **both directions**. Requests with no replies means the packets are leaving but nothing is coming back — a firewall or a routing problem on the far side, not on mine.
+* Seeing `ICMP echo request` **and** `echo reply` proves traffic flows in **both directions**. Requests with no replies means the packets are leaving but nothing is coming back - a firewall or a routing problem on the far side, not on mine.
 * Filters I use most: `port 80`, `host 8.8.8.8`, `tcp port 443`, and `-w capture.pcap` to save a capture and open it in Wireshark.
 
 ### Output
@@ -502,9 +502,9 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 0 packets dropped by kernel
 ```
 
-## 13. `/dev/tcp` — a port check with nothing but bash
+## 13. `/dev/tcp`: a port check with nothing but bash
 
-**What it does:** bash exposes `/dev/tcp/host/port` as a pseudo-device, so opening it *is* a TCP connect. Useful on stripped-down containers where `nc`, `telnet` and `curl` are all missing — which is most production images.
+**What it does:** bash exposes `/dev/tcp/host/port` as a pseudo-device, so opening it *is* a TCP connect. Useful on stripped-down containers where `nc`, `telnet` and `curl` are all missing - which is most production images.
 
 **What I understood from the output:** `timeout 2 bash -c '</dev/tcp/google.com/443'` succeeded, so the port is open. The exit status is the whole answer, which makes it ideal inside health-check scripts and Dockerfile `HEALTHCHECK` lines.
 
@@ -523,23 +523,23 @@ port 443 OPEN
 
 | Class | First octet range | Default subnet mask | Network / host bits | Usable hosts |
 |---|---|---|---|---|
-| A | 1 – 126 | `255.0.0.0` (`/8`) | 8 / 24 | 2²⁴ − 2 = 16,777,214 |
-| B | 128 – 191 | `255.255.0.0` (`/16`) | 16 / 16 | 2¹⁶ − 2 = 65,534 |
-| C | 192 – 223 | `255.255.255.0` (`/24`) | 24 / 8 | 2⁸ − 2 = 254 |
-| D | 224 – 239 | — | multicast | — |
-| E | 240 – 255 | — | experimental | — |
+| A | 1 - 126 | `255.0.0.0` (`/8`) | 8 / 24 | 2²⁴ − 2 = 16,777,214 |
+| B | 128 - 191 | `255.255.0.0` (`/16`) | 16 / 16 | 2¹⁶ − 2 = 65,534 |
+| C | 192 - 223 | `255.255.255.0` (`/24`) | 24 / 8 | 2⁸ − 2 = 254 |
+| D | 224 - 239 | - | multicast | - |
+| E | 240 - 255 | - | experimental | - |
 
-`127.0.0.0/8` is reserved for loopback. Two addresses are subtracted from every range because the all-zeros address is the **network address** and the all-ones address is the **broadcast address** — neither can be given to a host.
+`127.0.0.0/8` is reserved for loopback. Two addresses are subtracted from every range because the all-zeros address is the **network address** and the all-ones address is the **broadcast address** - neither can be given to a host.
 
-### Private IP ranges (RFC 1918 — never routed on the internet)
+### Private IP ranges (RFC 1918: never routed on the internet)
 
 | Class | Range | CIDR |
 |---|---|---|
-| A | 10.0.0.0 – 10.255.255.255 | `10.0.0.0/8` |
-| B | 172.16.0.0 – 172.31.255.255 | `172.16.0.0/12` |
-| C | 192.168.0.0 – 192.168.255.255 | `192.168.0.0/16` |
+| A | 10.0.0.0 - 10.255.255.255 | `10.0.0.0/8` |
+| B | 172.16.0.0 - 172.31.255.255 | `172.16.0.0/12` |
+| C | 192.168.0.0 - 192.168.255.255 | `192.168.0.0/16` |
 
-The interface in the output above (`172.17.0.11/16`) sits inside the Class B private range — that is the range Docker uses for its default bridge network.
+The interface in the output above (`172.17.0.11/16`) sits inside the Class B private range - that is the range Docker uses for its default bridge network.
 
 ### Worked example
 
@@ -549,7 +549,7 @@ The interface in the output above (`172.17.0.11/16`) sits inside the Class B pri
 network bits = 24, host bits = 8
 network address   = 197.23.45.0
 broadcast address = 197.23.45.255
-usable host range = 197.23.45.1 – 197.23.45.254
+usable host range = 197.23.45.1 - 197.23.45.254
 usable hosts      = 2^8 - 2 = 254
 ```
 
@@ -588,17 +588,3 @@ usable hosts      = 2^8 - 2 = 254
 * <https://github.com/Nency-Ravaliya/IP-quest>
 * <https://github.com/Nency-Ravaliya/IPFIX-NETFLOW-NTP>
 * <https://github.com/Nency-Ravaliya/How-DHCP-Works>
-
----
-
-## Screenshots (optional extras)
-
-Real terminal output is already included above. To add screenshots, drop them in [`screenshots/`](screenshots/) and uncomment:
-
-<!--
-![ip a and ip route](screenshots/01-ip-route.png)
-![ping and traceroute](screenshots/02-ping-traceroute.png)
-![dig and nslookup](screenshots/03-dns.png)
-![ss and netstat](screenshots/04-ss-netstat.png)
-![tcpdump capture](screenshots/05-tcpdump.png)
--->

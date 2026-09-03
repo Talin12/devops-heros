@@ -1,4 +1,4 @@
-# Shell Scripting — Homework (Session 3)
+# Shell Scripting: Homework (Session 3)
 
 **Name:** Talin Daga
 **Enrollment No.:** 24BCS10321
@@ -16,7 +16,7 @@ Script: **[`system_info.sh`](system_info.sh)**
 
 | # | Requirement | Where it is done | ✔ |
 |---|---|---|---|
-| 1 | Prints the current date | `CURRENT_DATE=$(date)` → `echo` | ✅ |
+| 1 | Prints the current date | `CURRENT_DATE=$(date)` -> `echo` | ✅ |
 | 2 | Prints the hostname | `HOST_NAME=$(hostname)` | ✅ |
 | 3 | Prints the username | `USER_NAME=$(whoami)` | ✅ |
 | 4 | Prints the disk usage | `DISK_USAGE=$(df -h)` | ✅ |
@@ -200,29 +200,18 @@ root          17  0.0  0.0   6444  2360 pts/0    R+   09:40   0:00 ps aux
 | `df -h` | disk usage, human readable | `DISK_USAGE=$(df -h)` |
 | `ps aux` | every running process | `ps aux \| head -n 10` |
 | `echo` | print to stdout | throughout |
-| `read -p` | prompt and read into a variable | `read -p "…" DIR_NAME` |
+| `read -p` | prompt and read into a variable | `read -p "..." DIR_NAME` |
 | `mkdir -p` | create a directory (`-p` = no error if it exists) | `mkdir -p "$DIR_NAME"` |
 | `touch` | create an empty file / update its timestamp | `touch "$DIR_NAME/$FILE_NAME"` |
-| `>` | **overwrite** redirection — send stdout into a file | `ps aux > file` |
+| `>` | **overwrite** redirection - send stdout into a file | `ps aux > file` |
 | `>>` | **append** redirection | used in other examples |
 | `head -n` | first N lines | `head -n 10` |
 | `ls -l` | long listing | proof the files were created |
 
 ### Notes on the shell concepts used
 
-* **`$(command)` — command substitution.** Runs the command and substitutes its *output*. Preferred over backticks because it nests cleanly.
-* **`"$VAR"` — always quote variables.** Without quotes, a value containing spaces would be split into multiple arguments.
+* **`$(command)` - command substitution.** Runs the command and substitutes its *output*. Preferred over backticks because it nests cleanly.
+* **`"$VAR"` - always quote variables.** Without quotes, a value containing spaces would be split into multiple arguments.
 * **`> file` vs `>> file`.** `>` truncates the file and writes fresh; `>>` appends to the end. The task specifically asks for `>`.
-* **`{ …; } > file` — group redirection.** Sends the output of a whole block into one file, used here to build `system_report.txt`.
-* **`mkdir -p`** creates parent directories as needed and does not fail if the directory already exists — which makes the script safe to re-run.
-
----
-
-## Screenshots (optional extras)
-
-Real terminal output is already included above. To add screenshots, drop them in [`screenshots/`](screenshots/) and uncomment:
-
-<!--
-![Script running](screenshots/01-script-run.png)
-![Files created](screenshots/02-files-created.png)
--->
+* **`{ ...; } > file` - group redirection.** Sends the output of a whole block into one file, used here to build `system_report.txt`.
+* **`mkdir -p`** creates parent directories as needed and does not fail if the directory already exists - which makes the script safe to re-run.

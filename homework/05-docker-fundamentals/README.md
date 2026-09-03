@@ -1,10 +1,10 @@
-# Docker Fundamentals — Homework (Sessions 6–7)
+# Docker Fundamentals: Homework (Sessions 6-7)
 
 **Name:** Talin Daga
 **Enrollment No.:** 24BCS10321
 **Email:** talin.24bcs10321@sst.scaler.com
 
-**Task:** create Hello World web applications with Docker for Node.js, Python, Java, Apache, React and Nginx — each in its own folder, each with its own Dockerfile, each built, run and verified in a browser.
+**Task:** create Hello World web applications with Docker for Node.js, Python, Java, Apache, React and Nginx - each in its own folder, each with its own Dockerfile, each built, run and verified in a browser.
 
 > Every image below was actually built and every container actually run. All output is verbatim.
 
@@ -45,14 +45,14 @@ homework/05-docker-fundamentals/
 |---|---|---|---|---|---|
 | Node.js + Express | `node:20-alpine` | 3000 | **3001** | 210 MB | ✅ Hello World served |
 | Python + Flask | `python:3.12-slim` | 5000 | **5001** | 234 MB | ✅ Hello World served |
-| Java | `eclipse-temurin:21-jdk` → `21-jre` | 8080 | **8081** | 474 MB | ✅ Hello World served |
+| Java | `eclipse-temurin:21-jdk` -> `21-jre` | 8080 | **8081** | 474 MB | ✅ Hello World served |
 | Apache httpd | `httpd:2.4` | 80 | **8082** | 205 MB | ✅ Hello World served |
-| React (Vite) | `node:20-alpine` → `nginx:alpine` | 80 | **3002** | 102 MB | ✅ Hello World served |
+| React (Vite) | `node:20-alpine` -> `nginx:alpine` | 80 | **3002** | 102 MB | ✅ Hello World served |
 | Nginx | `nginx:alpine` | 80 | **8083** | 102 MB | ✅ Hello World served |
 
 ---
 
-## 1. `nodejs-app` — Node.js + Express
+## 1. `nodejs-app`: Node.js + Express
 
 **Dockerfile**
 ```dockerfile
@@ -104,7 +104,7 @@ docker run -d --name hw-nodejs -p 3001:3000 hw-nodejs-app
 
 ---
 
-## 2. `python-app` — Python + Flask
+## 2. `python-app`: Python + Flask
 
 **Dockerfile**
 ```dockerfile
@@ -152,11 +152,11 @@ docker run -d --name hw-python -p 5001:5000 hw-python-app
 # open http://localhost:5001
 ```
 
-Flask must bind to **`0.0.0.0`**, not `127.0.0.1`. Binding to loopback inside a container makes the app unreachable from the host even with `-p` — this is the single most common Docker beginner bug.
+Flask must bind to **`0.0.0.0`**, not `127.0.0.1`. Binding to loopback inside a container makes the app unreachable from the host even with `-p` - this is the single most common Docker beginner bug.
 
 ---
 
-## 3. `java-app` — Java (multi-stage)
+## 3. `java-app`: Java (multi-stage)
 
 **Dockerfile**
 ```dockerfile
@@ -218,7 +218,7 @@ The **JDK** (compiler) is only needed to build. The final image ships the compil
 
 ---
 
-## 4. `Apache-app` — Apache HTTP Server
+## 4. `Apache-app`: Apache HTTP Server
 
 **Dockerfile**
 ```dockerfile
@@ -238,11 +238,11 @@ docker run -d --name hw-apache -p 8082:80 hw-apache-app
 # open http://localhost:8082
 ```
 
-Apache serves from **`/usr/local/apache2/htdocs/`**. No `CMD` is needed — the base image already runs `httpd-foreground`.
+Apache serves from **`/usr/local/apache2/htdocs/`**. No `CMD` is needed - the base image already runs `httpd-foreground`.
 
 ---
 
-## 5. `React-app` — React + Vite, served by Nginx
+## 5. `React-app`: React + Vite, served by Nginx
 
 **Dockerfile (multi-stage)**
 ```dockerfile
@@ -285,7 +285,7 @@ React is a **build-time** framework: `npm run build` produces plain HTML/CSS/JS 
 
 ---
 
-## 6. `nginx-app` — Nginx
+## 6. `nginx-app`: Nginx
 
 **Dockerfile**
 ```dockerfile
@@ -309,7 +309,7 @@ Nginx serves from **`/usr/share/nginx/html/`**.
 
 ---
 
-## Build, run and verification — actual output
+## Build, run and verification: actual output
 
 ```console
 ########## DOCKER FUNDAMENTALS : BUILD, RUN & VERIFY ##########
@@ -422,7 +422,7 @@ $ docker logs hw-python 2>&1 | head -6
 
 * `docker ps` shows **all six containers `Up`**, each with its port mapping (`0.0.0.0:3001->3000/tcp` and so on).
 * Each `curl` returned the **Hello World** line that the app renders, so the page really is being served over HTTP from inside the container.
-* `curl -I` on the Apache container returns `Server: Apache/2.4.68` — the real Apache banner, not a static file being read from disk.
+* `curl -I` on the Apache container returns `Server: Apache/2.4.68` - the real Apache banner, not a static file being read from disk.
 * `docker logs` shows each application's own startup message from inside its container.
 
 ---
@@ -433,7 +433,7 @@ $ docker logs hw-python 2>&1 | head -6
 |---|---|
 | `docker build -t <name> <path>` | build an image from a Dockerfile |
 | `docker images` | list local images |
-| `docker run -d --name X -p H:C <img>` | run detached, name it, map host port H → container port C |
+| `docker run -d --name X -p H:C <img>` | run detached, name it, map host port H -> container port C |
 | `docker ps` / `docker ps -a` | running containers / all containers |
 | `docker logs <name>` | stdout/stderr of a container |
 | `docker exec -it <name> sh` | shell inside a running container |
@@ -465,16 +465,30 @@ docker rmi hw-nodejs-app hw-python-app hw-java-app hw-apache-app hw-react-app hw
 
 ---
 
-## Screenshots (optional extras)
+## Screenshots: Hello World in the browser
 
-Real terminal output is already included above. For browser screenshots, open each URL, capture it, drop the files in [`screenshots/`](screenshots/) and uncomment:
+Captured from the **live containers** with headless Chrome while they were running.
+Each image is the page actually served by that container at the URL given.
 
-<!--
-![Node.js app](screenshots/01-nodejs.png)
-![Python app](screenshots/02-python.png)
-![Java app](screenshots/03-java.png)
-![Apache app](screenshots/04-apache.png)
-![React app](screenshots/05-react.png)
-![Nginx app](screenshots/06-nginx.png)
-![docker ps](screenshots/07-docker-ps.png)
--->
+### Node.js + Express: <http://localhost:3001>
+![Node.js Hello World served from a Docker container](screenshots/01-nodejs.png)
+
+### Python + Flask: <http://localhost:5001>
+![Python Flask Hello World served from a Docker container](screenshots/02-python.png)
+
+### Java: <http://localhost:8081>
+![Java Hello World served from a Docker container](screenshots/03-java.png)
+
+### Apache HTTP Server: <http://localhost:8082>
+![Apache Hello World served from a Docker container](screenshots/04-apache.png)
+
+### React + Vite (served by Nginx): <http://localhost:3002>
+![React Hello World served from a Docker container](screenshots/05-react.png)
+
+### Nginx: <http://localhost:8083>
+![Nginx Hello World served from a Docker container](screenshots/06-nginx.png)
+
+All six pages render **Hello World**, confirming the requirement
+*"Verify that Hello World is displayed on a webpage"* for every application.
+The matching `docker ps` port mappings and `curl` responses are in the
+[verification output](#build-run-and-verification-actual-output) above.

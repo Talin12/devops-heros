@@ -1,4 +1,4 @@
-# Dockerfiles & Images — Multi-Stage Build Homework (Sessions 6–7)
+# Dockerfiles & Images: Multi-Stage Build Homework (Sessions 6-7)
 
 **Name:** Talin Daga
 **Enrollment No.:** 24BCS10321
@@ -9,7 +9,7 @@
 
 ---
 
-## Task 1 — Run the multi-stage Dockerfile
+## Task 1: Run the multi-stage Dockerfile
 
 The repository containing the multi-stage Dockerfile is this one. It lives at
 [`session6-7-docker/multi-stage-dockerfile/`](../../session6-7-docker/multi-stage-dockerfile/).
@@ -57,9 +57,9 @@ CMD ["npm", "start"]
 ```
 
 **Stage 1 (`builder`)** installs *all* dependencies and brings in the source.
-**Stage 2 (`production`)** starts from a clean base and copies in only `package*.json` and `server.js`, then installs **production dependencies only** (`--omit=dev`). Everything else from the build stage — dev dependencies, caches, build tooling, source files that aren't needed at runtime — is left behind.
+**Stage 2 (`production`)** starts from a clean base and copies in only `package*.json` and `server.js`, then installs **production dependencies only** (`--omit=dev`). Everything else from the build stage - dev dependencies, caches, build tooling, source files that aren't needed at runtime - is left behind.
 
-### Build and run — actual output
+### Build and run: actual output
 
 ```console
 ########## SESSION 6-7 : MULTI-STAGE DOCKERFILE ##########
@@ -201,7 +201,7 @@ node                                   194MB
 
 ---
 
-## Task 2 — Documentation
+## Task 2: Documentation
 
 | | |
 |---|---|
@@ -210,9 +210,9 @@ node                                   194MB
 | **Email** | talin.24bcs10321@sst.scaler.com |
 | **Image** | `multi-stage-app` |
 | **Container** | `hw-multistage` |
-| **Port** | host **8080** → container 3000 |
+| **Port** | host **8080** -> container 3000 |
 
-### ✅ Evidence 1 — the application displays the Hello World message
+### Evidence 1: the application displays the Hello World message
 
 ```console
 $ curl -s http://localhost:8080
@@ -231,7 +231,7 @@ Keep-Alive: timeout=5
 
 The `X-Powered-By: Express` header confirms this is the Express app from stage 2 actually answering, and the `200 OK` confirms the request succeeded.
 
-### ✅ Evidence 2 — `docker ps` showing the container running on port 8080
+### Evidence 2: `docker ps` showing the container running on port 8080
 
 ```console
 $ docker ps --filter name=hw-multistage
@@ -239,9 +239,9 @@ CONTAINER ID   IMAGE             COMMAND                  CREATED         STATUS
 c4725d7133c8   multi-stage-app   "docker-entrypoint.s…"   5 seconds ago   Up 4 seconds   0.0.0.0:8080->3000/tcp, [::]:8080->3000/tcp   hw-multistage
 ```
 
-`0.0.0.0:8080->3000/tcp` — the container listens on 3000 internally and is **published on host port 8080**, exactly as required.
+`0.0.0.0:8080->3000/tcp` - the container listens on 3000 internally and is **published on host port 8080**, exactly as required.
 
-### ✅ Evidence 3 — the container's own logs
+### Evidence 3: the container's own logs
 
 ```console
 $ docker logs hw-multistage
@@ -254,7 +254,7 @@ Server running on port 3000
 
 ---
 
-## Why multi-stage builds matter — measured
+## Why multi-stage builds matter: measured
 
 To show the difference concretely, the **same React application** was built twice: once single-stage (Node ships to production) and once multi-stage (only the compiled bundle ships, served by Nginx).
 
@@ -306,15 +306,15 @@ hw-react-app:latest        102MB
 
 **A 4× smaller image**, and the benefits are not just disk:
 
-* **Faster deploys** — less to push and pull on every release.
-* **Smaller attack surface** — no compiler, no npm, no source code in the running container. Anything not in the image cannot be exploited in it.
-* **Cleaner separation** — build tools are a build concern, not a runtime concern.
+* **Faster deploys** - less to push and pull on every release.
+* **Smaller attack surface** - no compiler, no npm, no source code in the running container. Anything not in the image cannot be exploited in it.
+* **Cleaner separation** - build tools are a build concern, not a runtime concern.
 
 ---
 
-## Task 3 — Deploy at least 3 different types of applications with Docker
+## Task 3: Deploy at least 3 different types of applications with Docker
 
-Six applications were built and deployed — full source, Dockerfiles and per-app explanation in
+Six applications were built and deployed - full source, Dockerfiles and per-app explanation in
 **[`../05-docker-fundamentals/`](../05-docker-fundamentals/README.md)**.
 
 | # | Application | Type | Base image | Host port | Status |
@@ -323,7 +323,7 @@ Six applications were built and deployed — full source, Dockerfiles and per-ap
 | 2 | [`python-app`](../05-docker-fundamentals/python-app/) | Python + Flask | `python:3.12-slim` | 5001 | ✅ |
 | 3 | [`java-app`](../05-docker-fundamentals/java-app/) | Java (multi-stage) | `eclipse-temurin:21` | 8081 | ✅ |
 | 4 | [`Apache-app`](../05-docker-fundamentals/Apache-app/) | Apache httpd | `httpd:2.4` | 8082 | ✅ |
-| 5 | [`React-app`](../05-docker-fundamentals/React-app/) | React + Vite (multi-stage) | `node` → `nginx:alpine` | 3002 | ✅ |
+| 5 | [`React-app`](../05-docker-fundamentals/React-app/) | React + Vite (multi-stage) | `node` -> `nginx:alpine` | 3002 | ✅ |
 | 6 | [`nginx-app`](../05-docker-fundamentals/nginx-app/) | Nginx | `nginx:alpine` | 8083 | ✅ |
 
 ### All six running at once
@@ -369,22 +369,22 @@ Hello World from Nginx
 
 ---
 
-## Multi-stage build — concepts worth remembering
+## Multi-stage build: concepts worth remembering
 
 | Concept | Meaning |
 |---|---|
-| `FROM … AS <name>` | starts a **named** build stage |
+| `FROM ... AS <name>` | starts a **named** build stage |
 | `COPY --from=<stage>` | copy an artefact **out of** an earlier stage |
-| `COPY --from=<image>` | copy directly out of any image, e.g. `COPY --from=nginx:alpine …` |
-| `docker build --target <stage>` | build and stop at one stage — great for a "test" stage in CI |
+| `COPY --from=<image>` | copy directly out of any image, e.g. `COPY --from=nginx:alpine ...` |
+| `docker build --target <stage>` | build and stop at one stage - great for a "test" stage in CI |
 | Layer caching | each instruction is a layer; put the rarely-changing steps (dependency install) **before** the frequently-changing ones (source copy) |
 | `.dockerignore` | keeps `node_modules`, `.git`, secrets out of the build context |
-| Final image contents | **only** the last stage — everything else is discarded |
+| Final image contents | **only** the last stage - everything else is discarded |
 
 ### Typical interview question
 
 > **Why use a multi-stage build?**
-> To keep build-time tooling out of the runtime image. The compiler (JDK, Vite, Go toolchain, `gcc`), dev dependencies and source code are needed to *produce* the artefact, not to *run* it. Multi-stage lets you build in a fat image and ship only the artefact on a slim one — measured above as **411 MB → 102 MB** for the same React app. Smaller images deploy faster and have a much smaller attack surface.
+> To keep build-time tooling out of the runtime image. The compiler (JDK, Vite, Go toolchain, `gcc`), dev dependencies and source code are needed to *produce* the artefact, not to *run* it. Multi-stage lets you build in a fat image and ship only the artefact on a slim one - measured above as **411 MB -> 102 MB** for the same React app. Smaller images deploy faster and have a much smaller attack surface.
 
 ---
 
@@ -397,11 +397,11 @@ docker rmi multi-stage-app react-single-stage
 
 ---
 
-## Screenshots (optional extras)
+## Screenshot: the application running on port 8080
 
-Real terminal output is already included above. For a browser screenshot of the app on port 8080, drop the file in [`screenshots/`](screenshots/) and uncomment:
+Captured from the **live container** with headless Chrome at <http://localhost:8080>:
 
-<!--
-![App running on port 8080](screenshots/01-app-8080.png)
-![docker ps showing port 8080](screenshots/02-docker-ps.png)
--->
+![Hello World from Docker Multi-Stage Build, served on port 8080](screenshots/01-app-8080.png)
+
+This is the page produced by the multi-stage image, served by the `hw-multistage`
+container whose `docker ps` line above shows `0.0.0.0:8080->3000/tcp`.

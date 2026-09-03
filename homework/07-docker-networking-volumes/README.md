@@ -1,4 +1,4 @@
-# Docker Networking & Volumes — Homework (Session 8)
+# Docker Networking & Volumes: Homework (Session 8)
 
 **Name:** Talin Daga
 **Enrollment No.:** 24BCS10321
@@ -9,15 +9,15 @@
 ---
 
 ## Contents
-1. [Task 1 — Container networking (3 containers, 3 networks)](#task-1--container-networking)
-2. [Task 2 — Host network](#task-2--host-network)
-3. [Task 3 — Bind mount](#task-3--bind-mount)
-4. [Task 4 — Overlay network](#task-4--overlay-network)
-5. [Docker network drivers — summary](#docker-network-drivers--summary)
+1. [Task 1 - Container networking (3 containers, 3 networks)](#task-1-container-networking)
+2. [Task 2 - Host network](#task-2-host-network)
+3. [Task 3 - Bind mount](#task-3-bind-mount)
+4. [Task 4 - Overlay network](#task-4-overlay-network)
+5. [Docker network drivers - summary](#docker-network-drivers-summary)
 
 ---
 
-## Task 1 — Container Networking
+## Task 1: Container Networking
 
 **Goal:** three containers (frontend, backend, database), three networks, the **backend attached to two** of them, and connectivity checked between all of them.
 
@@ -36,7 +36,7 @@
     hw-frontend ──❌──▶ hw-database     (share NO network → isolated)
 ```
 
-`hw-backend` is the only container on **two** networks — it is the bridge between the frontend tier and the database tier. That is exactly how a real 3-tier app is wired: the web tier must never be able to reach the database directly.
+`hw-backend` is the only container on **two** networks - it is the bridge between the frontend tier and the database tier. That is exactly how a real 3-tier app is wired: the web tier must never be able to reach the database directly.
 
 ### Commands
 
@@ -58,7 +58,7 @@ docker network connect backend-net hw-backend
 # connectivity
 docker exec hw-backend  ping -c 3 hw-frontend     # works
 docker exec hw-backend  ping -c 3 hw-database     # works
-docker exec hw-frontend ping -c 2 hw-database     # fails — isolated
+docker exec hw-frontend ping -c 2 hw-database     # fails - isolated
 docker exec hw-backend  nc -zv hw-database 3306   # port-level check
 ```
 
@@ -218,13 +218,13 @@ Final topology:
 ### What the output proves
 
 * **Two IPs on one container.** `docker inspect hw-backend` lists `backend-net => 172.25.0.3` *and* `frontend-net => 172.24.0.3`. A container gets one virtual interface and one IP **per network** it joins.
-* **DNS by container name works** on user-defined networks. `ping hw-database` resolved automatically — Docker runs an embedded DNS server at `127.0.0.11` (visible in `/etc/resolv.conf`) that resolves container names. This does **not** happen on the legacy default `bridge` network, which is the main reason to always create your own network.
-* **Isolation is real.** `docker exec hw-frontend ping hw-database` → `bad address 'hw-database'`. The name doesn't even resolve, because the two containers share no network. This is the security property you rely on to keep a web tier away from a database.
-* **Port-level reachability.** `nc -zv hw-database 3306` → `open` from the backend, `bad address` from the frontend.
+* **DNS by container name works** on user-defined networks. `ping hw-database` resolved automatically - Docker runs an embedded DNS server at `127.0.0.11` (visible in `/etc/resolv.conf`) that resolves container names. This does **not** happen on the legacy default `bridge` network, which is the main reason to always create your own network.
+* **Isolation is real.** `docker exec hw-frontend ping hw-database` -> `bad address 'hw-database'`. The name doesn't even resolve, because the two containers share no network. This is the security property you rely on to keep a web tier away from a database.
+* **Port-level reachability.** `nc -zv hw-database 3306` -> `open` from the backend, `bad address` from the frontend.
 
 ---
 
-## Task 2 — Host Network
+## Task 2: Host Network
 
 **Goal:** pull the Apache2 image, run it with the **host network**, and access the site on port 80.
 
@@ -328,8 +328,8 @@ hw-apache-bridge
 ### What the output proves
 
 * **`PORTS` is empty in `docker ps`.** With `--network host` there is no port mapping, because there is no separate network namespace to map *from*. The container binds port 80 on the host directly.
-* **The container has no IP of its own** — `ContainerIP = ""` and the only "network" is `host`. Network-wise, the container *is* the host.
-* **`netstat` in the host namespace shows `:::80 LISTEN`** — Apache is genuinely holding host port 80.
+* **The container has no IP of its own** - `ContainerIP = ""` and the only "network" is `host`. Network-wise, the container *is* the host.
+* **`netstat` in the host namespace shows `:::80 LISTEN`** - Apache is genuinely holding host port 80.
 * Side by side: `hw-apache-bridge` needed `-p 8085:80` to be reachable; `hw-apache-host` needed nothing.
 
 ### Bridge vs host
@@ -338,17 +338,17 @@ hw-apache-bridge
 |---|---|---|
 | Network namespace | its own | **shares the host's** |
 | Container IP | yes (e.g. `172.17.0.2`) | none |
-| Port publishing | required (`-p 8080:80`) | not used — binds host ports directly |
-| Port conflicts | impossible between containers | **possible** — two containers can't both take :80 |
+| Port publishing | required (`-p 8080:80`) | not used - binds host ports directly |
+| Port conflicts | impossible between containers | **possible** - two containers can't both take :80 |
 | Performance | slight NAT overhead | no NAT, marginally faster |
-| Isolation | good | **weak** — the container sees every host interface |
+| Isolation | good | **weak** - the container sees every host interface |
 | Typical use | almost everything | high-throughput proxies, monitoring agents that must see host interfaces |
 
-> **Note on macOS/Windows:** Docker Desktop runs the engine inside a Linux VM, so "the host" for `--network host` is that VM, not macOS itself. The `wget` / `netstat` checks above were therefore run **from inside that same host namespace**, which is the accurate way to verify it on Docker Desktop. On a native Linux machine the identical `docker run --network host` command makes the site available at `http://localhost:80` on the machine itself, and `curl http://localhost` from a normal terminal works directly. (Docker Desktop ≥ 4.34 can also forward it to the Mac if *Settings → Resources → Network → Enable host networking* is switched on.)
+> **Note on macOS/Windows:** Docker Desktop runs the engine inside a Linux VM, so "the host" for `--network host` is that VM, not macOS itself. The `wget` / `netstat` checks above were therefore run **from inside that same host namespace**, which is the accurate way to verify it on Docker Desktop. On a native Linux machine the identical `docker run --network host` command makes the site available at `http://localhost:80` on the machine itself, and `curl http://localhost` from a normal terminal works directly. (Docker Desktop ≥ 4.34 can also forward it to the Mac if *Settings -> Resources -> Network -> Enable host networking* is switched on.)
 
 ---
 
-## Task 3 — Bind Mount
+## Task 3: Bind Mount
 
 **Goal:** create a folder with an `index.html` containing "Hello students", bind-mount it into Nginx, verify the page, then edit the file and confirm the change appears **without restarting the container**.
 
@@ -477,9 +477,9 @@ hw-demo-volume
 
 ### What the output proves
 
-* `docker inspect` shows `Type=bind`, the host `Source=` path and `Destination=/usr/share/nginx/html`, with `RW=false` because `:ro` was used — Nginx only needs to read.
-* The very first request returned **`<h1>Hello students</h1>`** — the host file, served by Nginx.
-* After editing the file **on the host**, the next request returned the new content, and `docker ps` shows the same `Up` status — the container was **never restarted**. That is the whole point of a bind mount: the host directory *is* the container directory, so changes are live. This is why bind mounts are the standard local-development setup (hot reload).
+* `docker inspect` shows `Type=bind`, the host `Source=` path and `Destination=/usr/share/nginx/html`, with `RW=false` because `:ro` was used - Nginx only needs to read.
+* The very first request returned **`<h1>Hello students</h1>`** - the host file, served by Nginx.
+* After editing the file **on the host**, the next request returned the new content, and `docker ps` shows the same `Up` status - the container was **never restarted**. That is the whole point of a bind mount: the host directory *is* the container directory, so changes are live. This is why bind mounts are the standard local-development setup (hot reload).
 * A brand-new file `page2.html` created on the host was served immediately too.
 * The extra **named-volume** section shows the contrast: a volume survived `docker rm -f` and reattached to a fresh container with the data intact.
 
@@ -489,15 +489,15 @@ hw-demo-volume
 |---|---|---|---|
 | Syntax | `-v /host/path:/container/path` | `-v myvol:/container/path` | `--tmpfs /path` |
 | Where the data lives | anywhere on the host you choose | Docker-managed (`/var/lib/docker/volumes/`) | RAM only |
-| Host path dependency | yes — breaks on another machine | no — portable | n/a |
+| Host path dependency | yes - breaks on another machine | no - portable | n/a |
 | Survives `docker rm` | yes (it's your folder) | yes | ❌ gone |
 | Managed by `docker volume` cmds | no | yes (`ls`, `inspect`, `prune`) | no |
-| Backup | ordinary file copy | `docker run --rm -v myvol:/data … tar` | n/a |
-| Best for | **local development** (live source, hot reload), config files | **production data** — databases, uploads | secrets, scratch space |
+| Backup | ordinary file copy | `docker run --rm -v myvol:/data ... tar` | n/a |
+| Best for | **local development** (live source, hot reload), config files | **production data** - databases, uploads | secrets, scratch space |
 
 ---
 
-## Task 4 — Overlay Network
+## Task 4: Overlay Network
 
 ### Research
 
@@ -505,12 +505,12 @@ An **overlay network** connects containers running on **different Docker hosts**
 
 **How it works**
 
-1. Overlay is a **swarm-scope** driver, so it needs a cluster — `docker swarm init` / `docker swarm join`.
+1. Overlay is a **swarm-scope** driver, so it needs a cluster - `docker swarm init` / `docker swarm join`.
 2. When a container on node A sends a packet to a container on node B, Docker wraps the original Ethernet frame inside a **VXLAN** packet (UDP port **4789**) and sends it over the physical network to node B, which unwraps it and delivers it. The containers never know they were on different machines.
 3. Each overlay network is a separate **VXLAN segment** (VNI). The output below shows `vxlanid_list:4097` for the network created.
 4. The network definition and the IP allocations are stored in the swarm's **raft store** on the manager nodes, so every node that joins automatically knows about the network. Its `Scope` is `swarm`, not `local`.
 5. **Service discovery** is built in: `nslookup <service>` returns a single **VIP** (virtual IP) that load-balances across replicas, while `tasks.<service>` returns the individual replica IPs.
-6. The **routing mesh** means a published port is reachable on **every** node in the swarm, even nodes not running a replica — they forward the request internally.
+6. The **routing mesh** means a published port is reachable on **every** node in the swarm, even nodes not running a replica - they forward the request internally.
 
 **Ports required between nodes**
 
@@ -527,7 +527,7 @@ An **overlay network** connects containers running on **different Docker hosts**
 * Any setup where a scheduler moves containers between hosts and the network must follow them.
 * `--opt encrypted` adds IPsec encryption on the data plane for traffic crossing untrusted networks.
 
-**Overlay vs bridge:** a bridge network is `local` — it only ever connects containers on **one** host. An overlay is `swarm`-scoped and spans **many** hosts. That is the whole difference.
+**Overlay vs bridge:** a bridge network is `local` - it only ever connects containers on **one** host. An overlay is `swarm`-scoped and spans **many** hosts. That is the whole difference.
 
 ### Practical demonstration
 
@@ -693,25 +693,25 @@ Swarm state: inactive
 ### What the output proves
 
 * **Overlay requires swarm.** Before `swarm init`: *"This node is not a swarm manager."*
-* **`Scope=swarm`, not `local`** — unlike a bridge network, the definition lives in the cluster, not on one host.
+* **`Scope=swarm`, not `local`** - unlike a bridge network, the definition lives in the cluster, not on one host.
 * Swarm automatically created the **`ingress`** overlay network (`10.0.0.0/24`) used by the routing mesh.
 * `hw-overlay-net` got its own subnet `10.0.1.0/24` and its own **VXLAN id 4097**.
-* **VIP load balancing:** `nslookup hw-web` → one address `10.0.1.2` (the virtual IP), while `nslookup tasks.hw-web` → `10.0.1.3` and `10.0.1.4`, the two actual replicas. Traffic to the VIP is spread across them by the kernel's IPVS.
-* The service was reachable both **from inside the overlay** (`wget http://hw-web`) and **from outside via the routing mesh** (`curl http://localhost:8087` → `200 OK`).
+* **VIP load balancing:** `nslookup hw-web` -> one address `10.0.1.2` (the virtual IP), while `nslookup tasks.hw-web` -> `10.0.1.3` and `10.0.1.4`, the two actual replicas. Traffic to the VIP is spread across them by the kernel's IPVS.
+* The service was reachable both **from inside the overlay** (`wget http://hw-web`) and **from outside via the routing mesh** (`curl http://localhost:8087` -> `200 OK`).
 * Cleanup confirmed: `Swarm state: inactive`.
 
 ---
 
-## Docker network drivers — summary
+## Docker network drivers: summary
 
 | Driver | Scope | What it is for |
 |---|---|---|
 | `bridge` | local | **default.** Private network on a single host; use a *user-defined* bridge to get DNS by container name |
 | `host` | local | container shares the host's network stack; no isolation, no port mapping |
 | `overlay` | swarm | multi-host networking via VXLAN; the basis of Swarm services |
-| `macvlan` | local | gives the container its own MAC and an IP **on the physical LAN** — it looks like a real machine to the network |
+| `macvlan` | local | gives the container its own MAC and an IP **on the physical LAN** - it looks like a real machine to the network |
 | `ipvlan` | local | like macvlan but shares the host's MAC; used where switches limit MACs per port |
-| `none` | local | no networking at all — maximum isolation, for batch jobs that must not touch the network |
+| `none` | local | no networking at all - maximum isolation, for batch jobs that must not touch the network |
 
 ## Command reference
 
@@ -749,14 +749,47 @@ docker network rm frontend-net backend-net database-net
 
 ---
 
-## Screenshots (optional extras)
+## Screenshots
 
-Real terminal output is already included above. To add screenshots, drop them in [`screenshots/`](screenshots/) and uncomment:
+All four tasks below were **executed live** and captured. The browser shots come from the
+running container; the terminal shots are the verbatim session output for tasks that have no
+web page to open.
 
-<!--
-![3 networks and 3 containers](screenshots/01-networks.png)
-![Connectivity tests](screenshots/02-connectivity.png)
-![Apache on host network](screenshots/03-host-network.png)
-![Bind mount before and after edit](screenshots/04-bind-mount.png)
-![Overlay network and service](screenshots/05-overlay.png)
--->
+### Task 1: three networks, three containers, connectivity
+
+![Three Docker networks with the backend on two of them, and the connectivity tests between all three containers](screenshots/01-networks-connectivity.png)
+
+The three `-net` networks and the three containers are listed first, then `docker inspect` shows
+**`hw-backend` attached to both `backend-net` and `frontend-net`**. The pings then prove the
+design: backend -> frontend works, backend -> database works, and **frontend -> database fails with
+`bad address`** because they share no network. `nc -zv hw-database 3306` confirms MySQL is
+reachable at the port level from the backend.
+
+### Task 2: Apache on the host network, port 80
+
+![Apache running with --network host, empty PORTS column, and port 80 bound in the host namespace](screenshots/02-host-network.png)
+
+The `PORTS` column is **empty** and `ContainerIP` is **`""`** - with `--network host` there is no
+separate namespace to map from, so no `-p` flag is used. `wget http://localhost:80` returns the
+Apache **"It works!"** page and `netstat` shows `:::80 LISTEN`, proving Apache holds host port 80
+directly.
+
+### Task 3: bind mount, after editing the file on the host
+
+Captured with headless Chrome at <http://localhost:8084>:
+
+![Nginx serving the bind-mounted index.html, showing the content edited on the host](screenshots/03-bind-mount.png)
+
+The page shows `Hello students - file was edited on the HOST at 15:04:24` - the text written
+into `bind-mount-demo/index.html` **on the host**, served straight out of the running Nginx
+container with **no restart**. That is the bind mount working live.
+
+### Task 4: overlay network on a single-node swarm
+
+![Overlay network creation failing without swarm, then succeeding after swarm init, with a 2-replica service and VIP service discovery](screenshots/04-overlay-network.png)
+
+Creating an overlay network **fails first** (`This node is not a swarm manager`), which is the
+point of the task - overlay is a *multi-host* driver. After `docker swarm init` the network is
+created with **`SCOPE = swarm`** rather than `local`, a 2-replica `hw-web` service runs on it, and
+`nslookup hw-web` resolves to the **VIP `10.0.1.2`** that load-balances across both replicas. The
+swarm was then removed with `docker swarm leave --force`, leaving the machine as it was found.

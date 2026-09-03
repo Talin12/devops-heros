@@ -19,7 +19,7 @@ Fork of the DevOps Heroes session repository, with my completed homework added u
 | 6 | Docker Images / Dockerfiles | [homework/06-dockerfiles-and-images](homework/06-dockerfiles-and-images/README.md) |
 | 7 | Docker Networking & Volumes | [homework/07-docker-networking-volumes](homework/07-docker-networking-volumes/README.md) |
 
-👉 Index with details: **[homework/README.md](homework/README.md)**
+Index with details: **[homework/README.md](homework/README.md)**
 
 ---
 
@@ -32,7 +32,7 @@ Fork of the DevOps Heroes session repository, with my completed homework added u
 | 3 | [Shell Scripting](session3-shell-scripting/) |
 | 4 | [Networking](session4-networking/) |
 | 5 | [Git & GitHub](session5-git-github/) |
-| 6–7 | [Docker](session6-7-docker/) |
+| 6-7 | [Docker](session6-7-docker/) |
 | 8 | [Docker Networking & Volumes](session8-docker-networking-volume/) |
 | 9 | [Kubernetes](session9-k8s/) |
 | 10 | [Kubernetes Core Objects](session10-k8s-core-objects/) |
