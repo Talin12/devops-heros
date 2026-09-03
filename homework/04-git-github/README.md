@@ -21,14 +21,14 @@ Git has three places a change can live:
 
 | | `git commit -m "msg"` | `git commit -a -m "msg"` |
 |---|---|---|
-| What gets committed | **only what is already staged** with `git add` | staged changes **+ all modified/deleted TRACKED files**, staged automatically |
+| What gets committed | only what is already staged with `git add` | staged changes + all modified/deleted TRACKED files, staged automatically |
 | Modified tracked file, not `git add`-ed | ❌ not committed | ✅ committed |
 | Deleted tracked file | ❌ not recorded | ✅ recorded |
-| **Brand-new untracked file** | ❌ not committed | ❌ **still not committed** |
+| Brand-new untracked file | ❌ not committed | ❌ still not committed |
 | Equivalent to | - | `git add -u && git commit -m "msg"` |
 | When to use | normal work - you choose exactly what goes in each commit | quick commit when you want *everything you edited* in one go |
 
-**The key point people get wrong:** `-a` does **not** mean "add everything". It means *"stage the files git is already tracking"*. A new file git has never seen still needs an explicit `git add`.
+**The key point people get wrong:** `-a` does not mean "add everything". It means *"stage the files git is already tracking"*. A new file git has never seen still needs an explicit `git add`.
 
 ### Commands and output
 
@@ -83,11 +83,11 @@ $ git log --oneline
 
 ### Reading the output
 
-1. After editing the tracked file `notes.txt`, `git status --short` shows ` M notes.txt` - **M in the second column** = modified in the working directory, not staged.
-2. `git commit -m` refused: **"no changes added to commit (use \"git add\" and/or \"git commit -a\")"**. Nothing was staged, so there was nothing to commit.
+1. After editing the tracked file `notes.txt`, `git status --short` shows ` M notes.txt` - M in the second column = modified in the working directory, not staged.
+2. `git commit -m` refused: "no changes added to commit (use \"git add\" and/or \"git commit -a\")". Nothing was staged, so there was nothing to commit.
 3. `git commit -a -m` worked immediately - it staged the modified tracked file itself and produced commit `89c4076`.
-4. Then a **new, untracked** file `new.txt` was created and `git commit -a -m` was run again: **"nothing added to commit but untracked files present"**. This is the proof that `-a` ignores untracked files.
-5. `git status --short` now shows `?? new.txt` - **`??` = untracked**, still waiting for a `git add`.
+4. Then a new, untracked file `new.txt` was created and `git commit -a -m` was run again: "nothing added to commit but untracked files present". This is the proof that `-a` ignores untracked files.
+5. `git status --short` now shows `?? new.txt` - `??` = untracked, still waiting for a `git add`.
 
 ---
 
@@ -95,11 +95,11 @@ $ git log --oneline
 
 ### What cherry-pick is
 
-`git cherry-pick <commit>` takes the **changes introduced by one specific commit** and replays them on top of the branch you are currently on. It is the answer to *"I need only that one bug fix from the feature branch on main - not the whole branch."*
+`git cherry-pick <commit>` takes the changes introduced by one specific commit and replays them on top of the branch you are currently on. It is the answer to *"I need only that one bug fix from the feature branch on main - not the whole branch."*
 
-A merge brings **all** commits of a branch. A cherry-pick brings **exactly one** (or a chosen few).
+A merge brings all commits of a branch. A cherry-pick brings exactly one (or a chosen few).
 
-The replayed commit gets a **new SHA** because its parent is different - it is a copy of the change, not the same commit object.
+The replayed commit gets a new SHA because its parent is different - it is a copy of the change, not the same commit object.
 
 ### The steps performed
 
@@ -108,7 +108,7 @@ The replayed commit gets a **new SHA** because its parent is different - it is a
 3. Created a `feature` branch
 4. Made 3 commits on `feature` (one of them the "important bugfix")
 5. Used `git log` to identify that specific commit
-6. Switched back to `main` and cherry-picked **only** that commit
+6. Switched back to `main` and cherry-picked only that commit
 7. Verified the change is now on `main`
 
 ### Commands and output
@@ -220,10 +220,10 @@ $ git branch -v
 ### Reading the output
 
 * On `main` before the cherry-pick, `ls` showed only `app.txt LICENSE.txt README.md` and the log had 3 commits.
-* The commit chosen was **`7097a29` - "feature: commit B - IMPORTANT bugfix"**.
-* `git cherry-pick 7097a29` created a **new commit `f304d19`** on `main` with the same message and the same change.
+* The commit chosen was `7097a29` - "feature: commit B - IMPORTANT bugfix".
+* `git cherry-pick 7097a29` created a new commit `f304d19` on `main` with the same message and the same change.
   The SHA is different (`7097a29` -> `f304d19`) because the parent commit is different - this is the single most important thing to understand about cherry-pick.
-* After it: `ls` on `main` now includes **`bugfix.txt`**, and `cat bugfix.txt` shows the fix - but `login.txt` and `darkmode.txt` from the feature branch are **not** there. Only the one selected commit came across.
+* After it: `ls` on `main` now includes `bugfix.txt`, and `cat bugfix.txt` shows the fix - but `login.txt` and `darkmode.txt` from the feature branch are not there. Only the one selected commit came across.
 * `git branch -v` confirms `feature` still has all 3 of its commits; nothing was moved or lost.
 
 ### Useful cherry-pick options
@@ -233,7 +233,7 @@ $ git branch -v
 | `git cherry-pick <sha>` | apply one commit |
 | `git cherry-pick <sha1> <sha2>` | apply several specific commits |
 | `git cherry-pick A..B` | apply a range (excluding A) |
-| `git cherry-pick -n <sha>` | apply the change but **don't commit** - leaves it staged |
+| `git cherry-pick -n <sha>` | apply the change but don't commit - leaves it staged |
 | `git cherry-pick -x <sha>` | adds "(cherry picked from commit ...)" to the message - good practice on shared branches |
 | `git cherry-pick --continue` | after resolving a conflict |
 | `git cherry-pick --abort` | undo the whole thing and go back |
@@ -255,14 +255,14 @@ git cherry-pick --abort
 
 ## Interview notes
 
-**Q. Is `git commit -a -m` safe to use all the time?**
+Q. Is `git commit -a -m` safe to use all the time?
 It's convenient but blunt - it sweeps up every tracked file you happened to edit, including debug prints and unrelated changes, into one commit. For clean, reviewable history, `git add` the specific files and then `git commit -m`.
 
-**Q. Cherry-pick vs merge vs rebase?**
-`merge` brings a whole branch's history across and creates a merge commit. `rebase` replays your commits on top of another branch to keep history linear. `cherry-pick` copies **selected individual commits** - mainly used for hotfixes that need to go into a release branch without dragging in the rest of the feature work.
+Q. Cherry-pick vs merge vs rebase?
+`merge` brings a whole branch's history across and creates a merge commit. `rebase` replays your commits on top of another branch to keep history linear. `cherry-pick` copies selected individual commits - mainly used for hotfixes that need to go into a release branch without dragging in the rest of the feature work.
 
-**Q. Why does the cherry-picked commit have a different hash?**
-A commit's SHA is a hash of its content **plus its parent and metadata**. Replaying it on a different parent produces a different hash, so it is a new commit object carrying the same diff.
+Q. Why does the cherry-picked commit have a different hash?
+A commit's SHA is a hash of its content plus its parent and metadata. Replaying it on a different parent produces a different hash, so it is a new commit object carrying the same diff.
 
-**Q. What does `git status --short` output mean?**
+Q. What does `git status --short` output mean?
 Two columns: staging area, then working directory. ` M` = modified but unstaged, `M ` = staged, `MM` = staged *and* modified again since, `??` = untracked, `A ` = newly added/staged, ` D` = deleted but unstaged.

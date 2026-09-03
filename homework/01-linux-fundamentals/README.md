@@ -4,7 +4,7 @@
 **Enrollment No.:** 24BCS10321
 **Email:** talin.24bcs10321@sst.scaler.com
 
-> Every command below was actually executed on **Ubuntu 22.04 LTS** and the output pasted verbatim.
+> Every command below was actually executed on Ubuntu 22.04 LTS and the output pasted verbatim.
 
 ---
 
@@ -22,16 +22,16 @@
 ### Theory
 
 A file on Linux is really two things:
-* the **inode** - the actual metadata + pointers to the data blocks on disk
-* the **directory entry (filename)** - a label that points at an inode
+* the inode - the actual metadata + pointers to the data blocks on disk
+* the directory entry (filename) - a label that points at an inode
 
 | | Hard Link | Soft Link (Symbolic Link) |
 |---|---|---|
 | Command | `ln target linkname` | `ln -s target linkname` |
-| What it points to | the **inode** (the data itself) | the **pathname** (a string) |
-| Inode number | **same** as the original | its **own** new inode |
+| What it points to | the inode (the data itself) | the pathname (a string) |
+| Inode number | same as the original | its own new inode |
 | Link count (`ls -l` 2nd column) | increases (2, 3, ...) | stays 1 |
-| If the original is deleted | link **still works** - data survives | link **breaks** (dangling) |
+| If the original is deleted | link still works - data survives | link breaks (dangling) |
 | Across filesystems / partitions | ❌ not allowed | ✅ allowed |
 | Point to a directory | ❌ not allowed | ✅ allowed |
 | Size shown by `ls -l` | size of the file | length of the target path string |
@@ -149,11 +149,11 @@ total 0
 
 ### What the output proves
 
-* `original.txt` and `hardlink.txt` both show inode **1038958** and link count **2** - they are two names for **one** file.
-* `softlink.txt` has its own inode **1038972**, type `symbolic link`, and size **12** (= the number of characters in the string `original.txt`).
+* `original.txt` and `hardlink.txt` both show inode 1038958 and link count 2 - they are two names for one file.
+* `softlink.txt` has its own inode 1038972, type `symbolic link`, and size 12 (= the number of characters in the string `original.txt`).
 * Appending through `hardlink.txt` changed what `original.txt` shows - same data, same inode.
-* After `rm original.txt`: `cat hardlink.txt` still works, `cat softlink.txt` gives **No such file or directory** - the soft link is now dangling.
-* `ln /root/mydir dirhardlink` -> **hard link not allowed for directory**, while `ln -s` on a directory works fine.
+* After `rm original.txt`: `cat hardlink.txt` still works, `cat softlink.txt` gives No such file or directory - the soft link is now dangling.
+* `ln /root/mydir dirhardlink` -> hard link not allowed for directory, while `ln -s` on a directory works fine.
 
 ---
 
@@ -163,9 +163,9 @@ total 0
 
 | | `useradd` | `adduser` |
 |---|---|---|
-| Type | low-level **binary** (`/usr/sbin/useradd`, part of `shadow-utils`) | high-level **Perl script** that wraps `useradd` |
+| Type | low-level binary (`/usr/sbin/useradd`, part of `shadow-utils`) | high-level Perl script that wraps `useradd` |
 | Available on | every Linux distro (RHEL, CentOS, Ubuntu, Debian, Alpine...) | Debian / Ubuntu family |
-| Home directory | **not** created unless you pass `-m` | created automatically |
+| Home directory | not created unless you pass `-m` | created automatically |
 | `/etc/skel` dotfiles copied | only with `-m` | automatically |
 | Shell | distro default (often `/bin/sh`) unless `-s` is passed | `/bin/bash` |
 | Password | not set (account locked) | prompts interactively |
@@ -175,9 +175,9 @@ total 0
 
 ### Which one is preferred on Ubuntu, and why
 
-**`adduser` is preferred on Ubuntu/Debian.** It is the friendly, interactive front-end that does all the right things in one step - creates the home directory, copies the `/etc/skel` skeleton files (`.bashrc`, `.profile`, `.bash_logout`), sets `/bin/bash` as the login shell, creates a matching user-private group, and prompts for a password. With plain `useradd` you get a half-configured account unless you remember every flag, which is a very common source of "why can't the new user log in?" tickets.
+`adduser` is preferred on Ubuntu/Debian. It is the friendly, interactive front-end that does all the right things in one step - creates the home directory, copies the `/etc/skel` skeleton files (`.bashrc`, `.profile`, `.bash_logout`), sets `/bin/bash` as the login shell, creates a matching user-private group, and prompts for a password. With plain `useradd` you get a half-configured account unless you remember every flag, which is a very common source of "why can't the new user log in?" tickets.
 
-`useradd` is still the right choice **inside scripts and Dockerfiles**, and on RHEL/CentOS where `adduser` may not exist (there it is often just a symlink to `useradd`).
+`useradd` is still the right choice inside scripts and Dockerfiles, and on RHEL/CentOS where `adduser` may not exist (there it is often just a symlink to `useradd`).
 
 ### Commands
 
@@ -301,9 +301,9 @@ _apt:x:100:65534::/nonexistent:/usr/sbin/nologin
 
 ### What the output proves
 
-* `useradd testuser1` -> the account exists in `/etc/passwd` but `/home` is **empty**, the shell is `/bin/sh`, and `passwd -S` reports **`L`** (locked, no password).
+* `useradd testuser1` -> the account exists in `/etc/passwd` but `/home` is empty, the shell is `/bin/sh`, and `passwd -S` reports `L` (locked, no password).
 * `useradd -m -s /bin/bash` -> now the home directory exists, but every behaviour had to be requested with a flag.
-* `adduser` -> printed exactly what it did: created the group, created the user, **created the home directory**, and **copied files from `/etc/skel`** (`ls -a` shows `.bashrc`, `.profile`, `.bash_logout`). Shell is `/bin/bash` with zero extra flags.
+* `adduser` -> printed exactly what it did: created the group, created the user, created the home directory, and copied files from `/etc/skel` (`ls -a` shows `.bashrc`, `.profile`, `.bash_logout`). Shell is `/bin/bash` with zero extra flags.
 * `head -1 /usr/sbin/adduser` shows `#!/usr/bin/perl` - proof that `adduser` is a script, whereas `useradd` is a compiled binary (126 KB vs 38 KB in `ls -l`).
 
 ---
@@ -312,7 +312,7 @@ _apt:x:100:65534::/nonexistent:/usr/sbin/nologin
 
 ### What journalctl is used for
 
-`journalctl` is the **query tool for the systemd journal**. On a systemd machine, `systemd-journald` collects logs from *everything* in one indexed, binary store:
+`journalctl` is the query tool for the systemd journal. On a systemd machine, `systemd-journald` collects logs from *everything* in one indexed, binary store:
 
 * kernel messages (what `dmesg` shows)
 * boot messages from early boot onwards
@@ -320,7 +320,7 @@ _apt:x:100:65534::/nonexistent:/usr/sbin/nologin
 * anything sent to syslog
 * structured audit records
 
-Instead of hunting through `/var/log/syslog`, `/var/log/nginx/error.log`, `/var/log/auth.log` etc., you ask **one** tool and filter by unit, time, priority or boot. That is why it is the first command you reach for when a service fails to start.
+Instead of hunting through `/var/log/syslog`, `/var/log/nginx/error.log`, `/var/log/auth.log` etc., you ask one tool and filter by unit, time, priority or boot. That is why it is the first command you reach for when a service fails to start.
 
 ### The commands that matter
 
@@ -328,14 +328,14 @@ Instead of hunting through `/var/log/syslog`, `/var/log/nginx/error.log`, `/var/
 |---|---|
 | `journalctl` | all logs, oldest first |
 | `journalctl -n 50` | last 50 lines |
-| `journalctl -f` | **follow** live, like `tail -f` |
-| `journalctl -u nginx` | logs of one **service/unit** |
+| `journalctl -f` | follow live, like `tail -f` |
+| `journalctl -u nginx` | logs of one service/unit |
 | `journalctl -u nginx -f` | live logs of one service ← the everyday one |
 | `journalctl -u nginx --since "1 hour ago"` | time-window filter |
 | `journalctl -p err` | only priority *error* and worse |
 | `journalctl -p warning..err` | a priority range |
-| `journalctl -b` | logs of the **current boot** only |
-| `journalctl -b -1` | logs of the **previous** boot (why did it crash?) |
+| `journalctl -b` | logs of the current boot only |
+| `journalctl -b -1` | logs of the previous boot (why did it crash?) |
 | `journalctl --list-boots` | all recorded boots |
 | `journalctl -k` | kernel messages only (`dmesg` equivalent) |
 | `journalctl --since today` / `--since "2026-09-03 09:00"` | time filters |
@@ -348,7 +348,7 @@ Instead of hunting through `/var/log/syslog`, `/var/log/nginx/error.log`, `/var/
 
 ### Practical: commands and output
 
-Run on a real systemd system (systemd is PID 1), checking the logs of the **nginx** service:
+Run on a real systemd system (systemd is PID 1), checking the logs of the nginx service:
 
 ```console
 ########## TASK 3 : journalctl ##########
@@ -547,11 +547,11 @@ Sep 03 09:30:33 c737b4436fd2 systemd[1]: Started A high performance web server a
 
 ### What the output proves
 
-* `ps -p 1 -o comm` -> **systemd** is PID 1, so the journal is live.
+* `ps -p 1 -o comm` -> systemd is PID 1, so the journal is live.
 * `journalctl -u nginx` shows the full lifecycle of one service - *Starting -> Started -> Stopping -> Deactivated successfully -> Stopped -> Starting -> Started* - which is exactly how you confirm a restart actually happened.
-* `journalctl -p err` returned **`-- No entries --`**: no errors on the box, which is itself a useful answer.
+* `journalctl -p err` returned `-- No entries --`: no errors on the box, which is itself a useful answer.
 * `--list-boots` shows the current boot ID and its time window.
-* `-o json-pretty` shows the journal is **structured**: every entry carries `_SYSTEMD_UNIT`, `_PID`, `PRIORITY`, `_HOSTNAME`, `MESSAGE_ID` etc. - that is what makes filtering fast and what log shippers consume.
+* `-o json-pretty` shows the journal is structured: every entry carries `_SYSTEMD_UNIT`, `_PID`, `PRIORITY`, `_HOSTNAME`, `MESSAGE_ID` etc. - that is what makes filtering fast and what log shippers consume.
 * `journalctl -f` streamed the nginx restart live while it was happening.
 
 ---
@@ -562,23 +562,23 @@ Sep 03 09:30:33 c737b4436fd2 systemd[1]: Started A high performance web server a
 
 | Category | Command | Purpose |
 |---|---|---|
-| **Identity** | `whoami`, `id`, `who`, `w` | current user, UID/GID, who is logged in |
-| **System** | `uname -a`, `cat /etc/os-release`, `uptime`, `hostname` | kernel, distro, uptime, hostname |
-| **Navigation** | `pwd`, `cd`, `ls -la`, `tree` | where am I, list files with permissions |
-| **Files** | `touch`, `cp`, `mv`, `rm`, `mkdir -p`, `rmdir` | create / copy / move / delete |
-| **Reading** | `cat`, `less`, `head -n`, `tail -n`, `tail -f`, `wc -l` | view file contents |
-| **Search** | `grep -rn`, `find / -name`, `which`, `locate` | find text and find files |
-| **Permissions** | `chmod`, `chown`, `chgrp`, `umask` | who can read/write/execute |
-| **Processes** | `ps aux`, `ps -ef`, `top`, `htop`, `kill -9`, `pkill`, `jobs`, `bg`, `fg` | inspect and control processes |
-| **Disk / memory** | `df -h`, `du -sh`, `free -h`, `lsblk`, `mount` | space and RAM |
-| **Archives** | `tar -czf`, `tar -xzf`, `tar -tzf`, `zip`, `unzip`, `gzip` | pack and unpack |
-| **Text processing** | `cut`, `sort`, `uniq -c`, `awk`, `sed`, `tr`, `xargs` | the classic pipeline toolkit |
-| **Networking** | `ip a`, `ping`, `curl`, `ss -tuln`, `dig`, `netstat` | see the [Networking homework](../03-networking/README.md) |
-| **Users** | `adduser`, `useradd`, `passwd`, `usermod -aG`, `groups`, `su`, `sudo` | account management |
-| **Services** | `systemctl status/start/stop/restart/enable`, `journalctl -u` | manage daemons |
-| **Packages** | `apt update`, `apt install`, `dpkg -l`, `apt list --installed` | software on Debian/Ubuntu |
-| **Environment** | `echo $PATH`, `export VAR=x`, `env`, `history`, `alias` | shell environment |
-| **Redirection** | `>`, `>>`, `2>`, `&>`, `\|`, `tee` | send output where you want it |
+| Identity | `whoami`, `id`, `who`, `w` | current user, UID/GID, who is logged in |
+| System | `uname -a`, `cat /etc/os-release`, `uptime`, `hostname` | kernel, distro, uptime, hostname |
+| Navigation | `pwd`, `cd`, `ls -la`, `tree` | where am I, list files with permissions |
+| Files | `touch`, `cp`, `mv`, `rm`, `mkdir -p`, `rmdir` | create / copy / move / delete |
+| Reading | `cat`, `less`, `head -n`, `tail -n`, `tail -f`, `wc -l` | view file contents |
+| Search | `grep -rn`, `find / -name`, `which`, `locate` | find text and find files |
+| Permissions | `chmod`, `chown`, `chgrp`, `umask` | who can read/write/execute |
+| Processes | `ps aux`, `ps -ef`, `top`, `htop`, `kill -9`, `pkill`, `jobs`, `bg`, `fg` | inspect and control processes |
+| Disk / memory | `df -h`, `du -sh`, `free -h`, `lsblk`, `mount` | space and RAM |
+| Archives | `tar -czf`, `tar -xzf`, `tar -tzf`, `zip`, `unzip`, `gzip` | pack and unpack |
+| Text processing | `cut`, `sort`, `uniq -c`, `awk`, `sed`, `tr`, `xargs` | the classic pipeline toolkit |
+| Networking | `ip a`, `ping`, `curl`, `ss -tuln`, `dig`, `netstat` | see the [Networking homework](../03-networking/README.md) |
+| Users | `adduser`, `useradd`, `passwd`, `usermod -aG`, `groups`, `su`, `sudo` | account management |
+| Services | `systemctl status/start/stop/restart/enable`, `journalctl -u` | manage daemons |
+| Packages | `apt update`, `apt install`, `dpkg -l`, `apt list --installed` | software on Debian/Ubuntu |
+| Environment | `echo $PATH`, `export VAR=x`, `env`, `history`, `alias` | shell environment |
+| Redirection | `>`, `>>`, `2>`, `&>`, `\|`, `tee` | send output where you want it |
 
 ### Permission numbers (asked in almost every interview)
 
@@ -912,23 +912,23 @@ var
 
 ## Interview Questions & Answers
 
-**Q1. What is the difference between a soft link and a hard link?**
-A hard link is a second **directory entry pointing at the same inode**, so it is indistinguishable from the original file - same inode number, same data, and the file's link count goes up. The data is only freed when the last hard link is removed, so deleting the "original" does not break the other name. A soft link is a tiny separate file whose *content is a path string*; it has its own inode and simply redirects to that path. If the target is renamed or deleted, the soft link dangles. Hard links cannot cross filesystems and cannot point at directories; soft links can do both.
+Q1. What is the difference between a soft link and a hard link?
+A hard link is a second directory entry pointing at the same inode, so it is indistinguishable from the original file - same inode number, same data, and the file's link count goes up. The data is only freed when the last hard link is removed, so deleting the "original" does not break the other name. A soft link is a tiny separate file whose *content is a path string*; it has its own inode and simply redirects to that path. If the target is renamed or deleted, the soft link dangles. Hard links cannot cross filesystems and cannot point at directories; soft links can do both.
 
-**Q2. Why can't a hard link cross a filesystem?**
+Q2. Why can't a hard link cross a filesystem?
 Because inode numbers are only unique *within* one filesystem. A directory entry stores an inode number, and that number is meaningless on another filesystem, so the kernel refuses (`Invalid cross-device link`).
 
-**Q3. Why are hard links to directories forbidden?**
+Q3. Why are hard links to directories forbidden?
 They would let you create loops in the directory tree (a directory reachable from inside itself), which would break `find`, `rm -r`, and filesystem-consistency tools. Only the kernel makes directory hard links, for `.` and `..`.
 
-**Q4. `adduser` or `useradd` - which should I use on Ubuntu and why?**
+Q4. `adduser` or `useradd` - which should I use on Ubuntu and why?
 `adduser`, because it is the Debian/Ubuntu policy-compliant front-end: it creates the home directory, copies `/etc/skel`, sets `/bin/bash`, creates the user-private group, and prompts for a password in one step. `useradd` is the low-level binary - portable to every distro and the right choice inside scripts and Dockerfiles, but it silently creates a half-usable account unless you pass `-m -s ...` yourself.
 
-**Q5. Where do I look when a service fails to start?**
+Q5. Where do I look when a service fails to start?
 `systemctl status <service>` for the summary, then `journalctl -u <service> -n 100 --no-pager` for the detail, `journalctl -u <service> -f` to watch a restart live, and `journalctl -p err -b` for every error since boot.
 
-**Q6. How do you see logs from the boot before the machine crashed?**
+Q6. How do you see logs from the boot before the machine crashed?
 `journalctl -b -1` (`--list-boots` to see what is available). This requires a *persistent* journal - `/var/log/journal` must exist, i.e. `Storage=persistent` in `/etc/systemd/journald.conf`.
 
-**Q7. What does `chmod 754` mean?**
+Q7. What does `chmod 754` mean?
 Owner `rwx` (7), group `r-x` (5), others `r--` (4).

@@ -8,7 +8,7 @@
 running processes, uses variables, takes input with `read -p`, creates a directory with `mkdir`,
 creates a file with `touch`, and stores the running processes in that file using `>` redirection.
 
-Script: **[`system_info.sh`](system_info.sh)**
+Script: [`system_info.sh`](system_info.sh)
 
 ---
 
@@ -203,15 +203,15 @@ root          17  0.0  0.0   6444  2360 pts/0    R+   09:40   0:00 ps aux
 | `read -p` | prompt and read into a variable | `read -p "..." DIR_NAME` |
 | `mkdir -p` | create a directory (`-p` = no error if it exists) | `mkdir -p "$DIR_NAME"` |
 | `touch` | create an empty file / update its timestamp | `touch "$DIR_NAME/$FILE_NAME"` |
-| `>` | **overwrite** redirection - send stdout into a file | `ps aux > file` |
-| `>>` | **append** redirection | used in other examples |
+| `>` | overwrite redirection - send stdout into a file | `ps aux > file` |
+| `>>` | append redirection | used in other examples |
 | `head -n` | first N lines | `head -n 10` |
 | `ls -l` | long listing | proof the files were created |
 
 ### Notes on the shell concepts used
 
-* **`$(command)` - command substitution.** Runs the command and substitutes its *output*. Preferred over backticks because it nests cleanly.
-* **`"$VAR"` - always quote variables.** Without quotes, a value containing spaces would be split into multiple arguments.
-* **`> file` vs `>> file`.** `>` truncates the file and writes fresh; `>>` appends to the end. The task specifically asks for `>`.
-* **`{ ...; } > file` - group redirection.** Sends the output of a whole block into one file, used here to build `system_report.txt`.
-* **`mkdir -p`** creates parent directories as needed and does not fail if the directory already exists - which makes the script safe to re-run.
+* `$(command)` - command substitution. Runs the command and substitutes its *output*. Preferred over backticks because it nests cleanly.
+* `"$VAR"` - always quote variables. Without quotes, a value containing spaces would be split into multiple arguments.
+* `> file` vs `>> file`. `>` truncates the file and writes fresh; `>>` appends to the end. The task specifically asks for `>`.
+* `{ ...; } > file` - group redirection. Sends the output of a whole block into one file, used here to build `system_report.txt`.
+* `mkdir -p` creates parent directories as needed and does not fail if the directory already exists - which makes the script safe to re-run.

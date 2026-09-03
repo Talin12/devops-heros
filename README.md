@@ -3,7 +3,7 @@
 Fork of the DevOps Heroes session repository, with my completed homework added under
 [`homework/`](homework/).
 
-**Talin Daga** · Enrollment No. 24BCS10321 · talin.24bcs10321@sst.scaler.com
+Talin Daga · Enrollment No. 24BCS10321 · talin.24bcs10321@sst.scaler.com
 
 ---
 
@@ -19,7 +19,7 @@ Fork of the DevOps Heroes session repository, with my completed homework added u
 | 6 | Docker Images / Dockerfiles | [homework/06-dockerfiles-and-images](homework/06-dockerfiles-and-images/README.md) |
 | 7 | Docker Networking & Volumes | [homework/07-docker-networking-volumes](homework/07-docker-networking-volumes/README.md) |
 
-Index with details: **[homework/README.md](homework/README.md)**
+Index with details: [homework/README.md](homework/README.md)
 
 ---
 

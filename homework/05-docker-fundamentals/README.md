@@ -43,18 +43,18 @@ homework/05-docker-fundamentals/
 
 | Application | Base image | Container port | Host port | Image size | Status |
 |---|---|---|---|---|---|
-| Node.js + Express | `node:20-alpine` | 3000 | **3001** | 210 MB | ✅ Hello World served |
-| Python + Flask | `python:3.12-slim` | 5000 | **5001** | 234 MB | ✅ Hello World served |
-| Java | `eclipse-temurin:21-jdk` -> `21-jre` | 8080 | **8081** | 474 MB | ✅ Hello World served |
-| Apache httpd | `httpd:2.4` | 80 | **8082** | 205 MB | ✅ Hello World served |
-| React (Vite) | `node:20-alpine` -> `nginx:alpine` | 80 | **3002** | 102 MB | ✅ Hello World served |
-| Nginx | `nginx:alpine` | 80 | **8083** | 102 MB | ✅ Hello World served |
+| Node.js + Express | `node:20-alpine` | 3000 | 3001 | 210 MB | ✅ Hello World served |
+| Python + Flask | `python:3.12-slim` | 5000 | 5001 | 234 MB | ✅ Hello World served |
+| Java | `eclipse-temurin:21-jdk` -> `21-jre` | 8080 | 8081 | 474 MB | ✅ Hello World served |
+| Apache httpd | `httpd:2.4` | 80 | 8082 | 205 MB | ✅ Hello World served |
+| React (Vite) | `node:20-alpine` -> `nginx:alpine` | 80 | 3002 | 102 MB | ✅ Hello World served |
+| Nginx | `nginx:alpine` | 80 | 8083 | 102 MB | ✅ Hello World served |
 
 ---
 
 ## 1. `nodejs-app`: Node.js + Express
 
-**Dockerfile**
+Dockerfile
 ```dockerfile
 # ---- Node.js Hello World ----
 FROM node:20-alpine
@@ -71,7 +71,7 @@ EXPOSE 3000
 CMD ["node", "server.js"]
 ```
 
-**server.js**
+server.js
 ```javascript
 const express = require("express");
 const app = express();
@@ -100,13 +100,13 @@ docker run -d --name hw-nodejs -p 3001:3000 hw-nodejs-app
 # open http://localhost:3001
 ```
 
-`package.json` is copied **before** the source and `npm install` is run on its own layer, so Docker reuses the cached dependency layer whenever only `server.js` changes.
+`package.json` is copied before the source and `npm install` is run on its own layer, so Docker reuses the cached dependency layer whenever only `server.js` changes.
 
 ---
 
 ## 2. `python-app`: Python + Flask
 
-**Dockerfile**
+Dockerfile
 ```dockerfile
 # ---- Python Hello World ----
 FROM python:3.12-slim
@@ -122,7 +122,7 @@ EXPOSE 5000
 CMD ["python", "app.py"]
 ```
 
-**app.py**
+app.py
 ```python
 from flask import Flask
 
@@ -152,13 +152,13 @@ docker run -d --name hw-python -p 5001:5000 hw-python-app
 # open http://localhost:5001
 ```
 
-Flask must bind to **`0.0.0.0`**, not `127.0.0.1`. Binding to loopback inside a container makes the app unreachable from the host even with `-p` - this is the single most common Docker beginner bug.
+Flask must bind to `0.0.0.0`, not `127.0.0.1`. Binding to loopback inside a container makes the app unreachable from the host even with `-p` - this is the single most common Docker beginner bug.
 
 ---
 
 ## 3. `java-app`: Java (multi-stage)
 
-**Dockerfile**
+Dockerfile
 ```dockerfile
 # ---- Java Hello World (multi-stage: JDK compiles, JRE runs) ----
 FROM eclipse-temurin:21-jdk AS build
@@ -173,7 +173,7 @@ EXPOSE 8080
 CMD ["java", "HelloServer"]
 ```
 
-**HelloServer.java**
+HelloServer.java
 ```java
 import com.sun.net.httpserver.HttpServer;
 import java.io.OutputStream;
@@ -214,13 +214,13 @@ docker run -d --name hw-java -p 8081:8080 hw-java-app
 # open http://localhost:8081
 ```
 
-The **JDK** (compiler) is only needed to build. The final image ships the compiled `.class` on a **JRE** base, so the compiler never reaches production.
+The JDK (compiler) is only needed to build. The final image ships the compiled `.class` on a JRE base, so the compiler never reaches production.
 
 ---
 
 ## 4. `Apache-app`: Apache HTTP Server
 
-**Dockerfile**
+Dockerfile
 ```dockerfile
 # ---- Apache (httpd) Hello World ----
 FROM httpd:2.4
@@ -238,13 +238,13 @@ docker run -d --name hw-apache -p 8082:80 hw-apache-app
 # open http://localhost:8082
 ```
 
-Apache serves from **`/usr/local/apache2/htdocs/`**. No `CMD` is needed - the base image already runs `httpd-foreground`.
+Apache serves from `/usr/local/apache2/htdocs/`. No `CMD` is needed - the base image already runs `httpd-foreground`.
 
 ---
 
 ## 5. `React-app`: React + Vite, served by Nginx
 
-**Dockerfile (multi-stage)**
+Dockerfile (multi-stage)
 ```dockerfile
 # ---- React Hello World (multi-stage build) ----
 
@@ -262,7 +262,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
 ```
 
-**src/App.jsx**
+src/App.jsx
 ```jsx
 export default function App() {
   return (
@@ -281,13 +281,13 @@ docker run -d --name hw-react -p 3002:80 hw-react-app
 # open http://localhost:3002
 ```
 
-React is a **build-time** framework: `npm run build` produces plain HTML/CSS/JS in `dist/`. Node is only needed for that build, so stage 2 copies `dist/` onto `nginx:alpine`. That is why this image is **102 MB** instead of the ~400 MB it would be if Node shipped with it.
+React is a build-time framework: `npm run build` produces plain HTML/CSS/JS in `dist/`. Node is only needed for that build, so stage 2 copies `dist/` onto `nginx:alpine`. That is why this image is **102 MB** instead of the ~400 MB it would be if Node shipped with it.
 
 ---
 
 ## 6. `nginx-app`: Nginx
 
-**Dockerfile**
+Dockerfile
 ```dockerfile
 # ---- Nginx Hello World ----
 FROM nginx:alpine
@@ -305,7 +305,7 @@ docker run -d --name hw-nginx -p 8083:80 hw-nginx-app
 # open http://localhost:8083
 ```
 
-Nginx serves from **`/usr/share/nginx/html/`**.
+Nginx serves from `/usr/share/nginx/html/`.
 
 ---
 
@@ -420,8 +420,8 @@ $ docker logs hw-python 2>&1 | head -6
 
 ### What this proves
 
-* `docker ps` shows **all six containers `Up`**, each with its port mapping (`0.0.0.0:3001->3000/tcp` and so on).
-* Each `curl` returned the **Hello World** line that the app renders, so the page really is being served over HTTP from inside the container.
+* `docker ps` shows all six containers `Up`, each with its port mapping (`0.0.0.0:3001->3000/tcp` and so on).
+* Each `curl` returned the Hello World line that the app renders, so the page really is being served over HTTP from inside the container.
 * `curl -I` on the Apache container returns `Server: Apache/2.4.68` - the real Apache banner, not a static file being read from disk.
 * `docker logs` shows each application's own startup message from inside its container.
 
@@ -449,9 +449,9 @@ $ docker logs hw-python 2>&1 | head -6
 | `FROM` | base image (and starts a new build stage) |
 | `WORKDIR` | set (and create) the working directory |
 | `COPY` | copy files from build context into the image |
-| `RUN` | execute a command **at build time**, creating a layer |
+| `RUN` | execute a command at build time, creating a layer |
 | `EXPOSE` | document the port the app listens on |
-| `CMD` | default command run **at container start** |
+| `CMD` | default command run at container start |
 | `COPY --from=<stage>` | pull artefacts out of an earlier stage (multi-stage) |
 
 ---
@@ -467,28 +467,26 @@ docker rmi hw-nodejs-app hw-python-app hw-java-app hw-apache-app hw-react-app hw
 
 ## Screenshots: Hello World in the browser
 
-Captured from the **live containers** with headless Chrome while they were running.
-Each image is the page actually served by that container at the URL given.
+Each image is the page served by that container, taken while all six were running.
 
-### Node.js + Express: <http://localhost:3001>
-![Node.js Hello World served from a Docker container](screenshots/01-nodejs.png)
+### Node.js + Express, port 3001
+![Node.js app](screenshots/01-nodejs.png)
 
-### Python + Flask: <http://localhost:5001>
-![Python Flask Hello World served from a Docker container](screenshots/02-python.png)
+### Python + Flask, port 5001
+![Python app](screenshots/02-python.png)
 
-### Java: <http://localhost:8081>
-![Java Hello World served from a Docker container](screenshots/03-java.png)
+### Java, port 8081
+![Java app](screenshots/03-java.png)
 
-### Apache HTTP Server: <http://localhost:8082>
-![Apache Hello World served from a Docker container](screenshots/04-apache.png)
+### Apache, port 8082
+![Apache app](screenshots/04-apache.png)
 
-### React + Vite (served by Nginx): <http://localhost:3002>
-![React Hello World served from a Docker container](screenshots/05-react.png)
+### React + Vite behind Nginx, port 3002
+![React app](screenshots/05-react.png)
 
-### Nginx: <http://localhost:8083>
-![Nginx Hello World served from a Docker container](screenshots/06-nginx.png)
+### Nginx, port 8083
+![Nginx app](screenshots/06-nginx.png)
 
-All six pages render **Hello World**, confirming the requirement
-*"Verify that Hello World is displayed on a webpage"* for every application.
-The matching `docker ps` port mappings and `curl` responses are in the
+All six show Hello World, which covers the "Verify that Hello World is displayed on a
+webpage" requirement. The port mappings and curl responses are in the
 [verification output](#build-run-and-verification-actual-output) above.

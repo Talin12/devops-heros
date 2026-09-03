@@ -6,7 +6,7 @@
 **Repository:** <https://github.com/Talin12/devops-heros>
 
 All homework from the DevOps Heroes sessions, one folder per topic. Every command in every
-README was **actually executed** and the output pasted verbatim - no invented output.
+README was actually executed and the output pasted verbatim - no invented output.
 
 ---
 
@@ -14,13 +14,13 @@ README was **actually executed** and the output pasted verbatim - no invented ou
 
 | # | Topic | Session | README to submit |
 |---|---|---|---|
-| 1 | **Linux Fundamentals** | Session 2 | [`01-linux-fundamentals/README.md`](01-linux-fundamentals/README.md) |
-| 2 | **Shell Scripting** | Session 3 | [`02-shell-scripting/README.md`](02-shell-scripting/README.md) |
-| 3 | **Networking** | Session 4 | [`03-networking/README.md`](03-networking/README.md) |
-| 4 | **Git and GitHub** | Session 5 | [`04-git-github/README.md`](04-git-github/README.md) |
-| 5 | **Docker Fundamentals** | Sessions 6-7 | [`05-docker-fundamentals/README.md`](05-docker-fundamentals/README.md) |
-| 6 | **Docker Images / Dockerfiles** | Sessions 6-7 | [`06-dockerfiles-and-images/README.md`](06-dockerfiles-and-images/README.md) |
-| 7 | **Docker Networking** | Session 8 | [`07-docker-networking-volumes/README.md`](07-docker-networking-volumes/README.md) |
+| 1 | Linux Fundamentals | Session 2 | [`01-linux-fundamentals/README.md`](01-linux-fundamentals/README.md) |
+| 2 | Shell Scripting | Session 3 | [`02-shell-scripting/README.md`](02-shell-scripting/README.md) |
+| 3 | Networking | Session 4 | [`03-networking/README.md`](03-networking/README.md) |
+| 4 | Git and GitHub | Session 5 | [`04-git-github/README.md`](04-git-github/README.md) |
+| 5 | Docker Fundamentals | Sessions 6-7 | [`05-docker-fundamentals/README.md`](05-docker-fundamentals/README.md) |
+| 6 | Docker Images / Dockerfiles | Sessions 6-7 | [`06-dockerfiles-and-images/README.md`](06-dockerfiles-and-images/README.md) |
+| 7 | Docker Networking | Session 8 | [`07-docker-networking-volumes/README.md`](07-docker-networking-volumes/README.md) |
 
 ---
 
@@ -49,12 +49,12 @@ Six Hello World web apps, each in its own folder with its own Dockerfile - `node
 `python-app`, `java-app`, `Apache-app`, `React-app`, `nginx-app`. All six built, run and verified.
 
 ### [06: Dockerfiles & Images](06-dockerfiles-and-images/)
-The multi-stage Dockerfile built and running on **port 8080**, `docker ps` evidence, and a
+The multi-stage Dockerfile built and running on port 8080, `docker ps` evidence, and a
 measured size comparison: the same React app is **411 MB** single-stage vs **102 MB** multi-stage.
 
 ### [07: Docker Networking & Volumes](07-docker-networking-volumes/)
 Three containers across three networks with the backend on two of them (and proof the frontend
-**cannot** reach the database), Apache on the host network, a live bind mount, and a real
+cannot reach the database), Apache on the host network, a live bind mount, and a real
 overlay network on a temporary swarm.
 
 ---
