@@ -21,6 +21,7 @@ README was actually executed and the output pasted verbatim - no invented output
 | 5 | Docker Fundamentals | Sessions 6-7 | [`05-docker-fundamentals/README.md`](05-docker-fundamentals/README.md) |
 | 6 | Docker Images / Dockerfiles | Sessions 6-7 | [`06-dockerfiles-and-images/README.md`](06-dockerfiles-and-images/README.md) |
 | 7 | Docker Networking | Session 8 | [`07-docker-networking-volumes/README.md`](07-docker-networking-volumes/README.md) |
+| 8 | Kubernetes Ingress, ConfigMaps & Secrets | Session 12 | [`08-k8s-ingress-configmaps-secrets/README.md`](08-k8s-ingress-configmaps-secrets/README.md) |
 
 ---
 
@@ -57,6 +58,13 @@ Three containers across three networks with the backend on two of them (and proo
 cannot reach the database), Apache on the host network, a live bind mount, and a real
 overlay network on a temporary swarm.
 
+### [08: Kubernetes Ingress, ConfigMaps & Secrets](08-k8s-ingress-configmaps-secrets/)
+The full Session 12 lab on minikube: ConfigMap and Secret injected into the same pod via `envFrom`
+and `secretKeyRef`, two `ClusterIP` services exposed through one NGINX Ingress with path-based
+routing, the `echo` vs `echo -n` newline bug shown byte-for-byte with `od -c`, and a rolling
+restart proving env vars are frozen at container start. Plus the bonus host-based routing + TLS
+task - including the self-signed cert that silently fails because it has no SAN.
+
 ---
 
 ## Environment used
@@ -68,3 +76,5 @@ overlay network on a temporary swarm.
 | Node.js | 20 (alpine) / 24 (alpine) |
 | Python | 3.12 |
 | Java | Eclipse Temurin 21 |
+| minikube / Kubernetes | v1.39.0 / v1.37.0 (docker driver) |
+| kubectl | 1.37.0 |
