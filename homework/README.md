@@ -22,6 +22,9 @@ README was actually executed and the output pasted verbatim - no invented output
 | 6 | Docker Images / Dockerfiles | Sessions 6-7 | [`06-dockerfiles-and-images/README.md`](06-dockerfiles-and-images/README.md) |
 | 7 | Docker Networking | Session 8 | [`07-docker-networking-volumes/README.md`](07-docker-networking-volumes/README.md) |
 | 8 | Kubernetes Ingress, ConfigMaps & Secrets | Session 12 | [`08-k8s-ingress-configmaps-secrets/README.md`](08-k8s-ingress-configmaps-secrets/README.md) |
+| 9 | Kubernetes Fundamentals | Session 9 | [`09-k8s-fundamentals/README.md`](09-k8s-fundamentals/README.md) |
+| 10 | Kubernetes Pods, ReplicaSets & Deployments | Session 10 | [`10-k8s-core-objects/README.md`](10-k8s-core-objects/README.md) |
+| 11 | Kubernetes Networking & Services | Session 11 | [`11-k8s-services/README.md`](11-k8s-services/README.md) |
 
 ---
 
@@ -64,6 +67,24 @@ and `secretKeyRef`, two `ClusterIP` services exposed through one NGINX Ingress w
 routing, the `echo` vs `echo -n` newline bug shown byte-for-byte with `od -c`, and a rolling
 restart proving env vars are frozen at container start. Plus the bonus host-based routing + TLS
 task - including the self-signed cert that silently fails because it has no SAN.
+
+### [09: Kubernetes Fundamentals](09-k8s-fundamentals/)
+The minikube cluster and what every control-plane component in `kube-system` actually does, traced
+through a single pod's Events block (scheduler assigns, kubelet pulls/creates/starts). Then the
+contrast that explains the rest of Kubernetes: a bare Pod deleted is gone, a Deployment's Pod comes
+back as a **new** pod - and the Deployment → ReplicaSet → Pod ownership chain that makes it happen.
+
+### [10: Kubernetes Pods, ReplicaSets & Deployments](10-k8s-core-objects/)
+All 12 pod lifecycle states reproduced and diagnosed, ReplicaSet vs Deployment (`rollout history`
+fails outright on a ReplicaSet), DaemonSet, and a StatefulSet proving stable identity by surviving
+pod deletion with its data intact. Plus all four rollout strategies with the numbers measured:
+Recreate's outage caught at `running=0`, and canary's real split at **16/200 requests**.
+
+### [11: Kubernetes Networking & Services](11-k8s-services/)
+All five service types. ClusterIP resolving to one VIP vs headless resolving to all three pod IPs,
+NodePort as a superset of ClusterIP, LoadBalancer correctly stuck at `<pending>` with no cloud
+controller, ExternalName as a pure CNAME with no endpoints at all - and the empty-endpoints
+selector bug that Kubernetes accepts without a word of complaint.
 
 ---
 
