@@ -1,0 +1,25 @@
+# Applied by hand (kubectl apply -f), deliberately kept outside app/ so Argo CD
+# does not try to manage the object that tells it what to manage.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: session20-mini
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/Talin12/devops-heros.git
+    targetRevision: main
+    path: homework/20-monitoring-gitops/gitops/app
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: session20
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
