@@ -1,0 +1,124 @@
+name: HW21 - TaskBoard CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "homework/21-final-project/**"
+      - ".github/workflows/hw21-ci-cd.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "homework/21-final-project/**"
+  workflow_dispatch:
+
+env:
+  BACKEND_IMAGE: ghcr.io/talin12/taskboard-backend
+  FRONTEND_IMAGE: ghcr.io/talin12/taskboard-frontend
+
+defaults:
+  run:
+    working-directory: homework/21-final-project
+
+jobs:
+  test:
+    name: Test backend + build frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        working-directory: homework/21-final-project/backend
+        run: pip install -r requirements.txt
+
+      - name: pytest
+        working-directory: homework/21-final-project/backend
+        run: pytest -v
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build frontend
+        working-directory: homework/21-final-project/frontend
+        run: npm install && npm run build
+
+  build-scan-push:
+    name: Build, Trivy scan, push to GHCR
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build images (tagged with the commit SHA)
+        run: |
+          docker build -t $BACKEND_IMAGE:${{ github.sha }} ./backend
+          docker build -t $FRONTEND_IMAGE:${{ github.sha }} ./frontend
+
+      - name: Install Trivy
+        run: |
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq trivy
+
+      - name: Trivy - backend (fail on fixable HIGH/CRITICAL)
+        run: trivy image --no-progress --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 $BACKEND_IMAGE:${{ github.sha }}
+
+      - name: Trivy - frontend (fail on fixable HIGH/CRITICAL)
+        run: trivy image --no-progress --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 $FRONTEND_IMAGE:${{ github.sha }}
+
+      - name: Push to GHCR
+        if: github.event_name == 'push'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push $BACKEND_IMAGE:${{ github.sha }}
+          docker push $FRONTEND_IMAGE:${{ github.sha }}
+
+  deploy:
+    name: Helm deploy to kind
+    needs: build-scan-push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+
+      - name: Load the exact images that passed the scan
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          for img in $BACKEND_IMAGE $FRONTEND_IMAGE; do
+            docker pull $img:${{ github.sha }}
+            kind load docker-image $img:${{ github.sha }} --name chart-testing
+          done
+
+      - name: helm upgrade --install
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          helm upgrade --install taskboard ./helm/taskboard -n taskboard \
+            --set backend.tag=${{ github.sha }} \
+            --set frontend.tag=${{ github.sha }} \
+            --wait --timeout 5m
+          helm list -n taskboard
+          kubectl get pods,svc -n taskboard
+
+      - name: Smoke test through the frontend's nginx
+        run: |
+          kubectl port-forward -n taskboard svc/taskboard-frontend 8080:80 &
+          sleep 3
+          curl -sf http://localhost:8080/health
+          echo
+          curl -sf -X POST http://localhost:8080/api/tasks -H 'Content-Type: application/json' -d '{"title":"Created by CI"}'
+          echo
+          curl -sf http://localhost:8080/api/tasks/stats

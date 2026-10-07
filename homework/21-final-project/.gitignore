@@ -1,0 +1,18 @@
+.idea/
+.vscode/
+node_modules/
+dist/
+target/
+*.log
+.env
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+backend/test.db
