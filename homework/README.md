@@ -33,6 +33,7 @@ README was actually executed and the output pasted verbatim - no invented output
 | 18 | Terraform & Infrastructure as Code | Session 18 | [`18-terraform-iac/README.md`](18-terraform-iac/README.md) |
 | 19 | Cloud & Terraform in Action | Session 19 | [`19-cloud-terraform/README.md`](19-cloud-terraform/README.md) |
 | 20 | Monitoring, Observability & GitOps | Session 20 | [`20-monitoring-gitops/README.md`](20-monitoring-gitops/README.md) |
+| 21 | Final DevOps Project & Troubleshooting | Session 21 | [`21-final-project/README.md`](21-final-project/README.md) |
 
 ---
 
