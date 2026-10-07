@@ -145,6 +145,9 @@ $ ip route get 8.8.8.8
     cache
 ```
 
+![ip a and ip route](screenshots/01-ip-a-and-route.png)
+*Screenshot: re-run in an Ubuntu 22.04 container, so the addresses are Docker's network rather than the original VM's.*
+
 ## 3. `ping`: is the host reachable?
 
 **What it does:** sends ICMP echo request packets and waits for echo replies. The first thing to run when "the server is down".
@@ -203,6 +206,9 @@ traceroute to 8.8.8.8 (8.8.8.8), 8 hops max, 60 byte packets
  7  * * *
  8  * * *
 ```
+
+![ping and traceroute](screenshots/02-ping-traceroute.png)
+*Screenshot: re-run in an Ubuntu 22.04 container, so the addresses are Docker's network rather than the original VM's.*
 
 ## 5. `nslookup` / `dig` / `host`: DNS resolution
 
@@ -281,6 +287,9 @@ $ host github.com
 github.com has address 20.207.73.82
 github.com mail is handled by 0 github-com.mail.protection.outlook.com.
 ```
+
+![dig, nslookup, host](screenshots/03-dns-dig-nslookup.png)
+*Screenshot: re-run in an Ubuntu 22.04 container, so the addresses are Docker's network rather than the original VM's.*
 
 ## 6. `ss` / `netstat`: sockets and listening ports
 
@@ -392,6 +401,9 @@ Connected to google.com.
 Escape character is '^]'.
 Connection closed by foreign host.
 ```
+
+![ss, curl, nc and /dev/tcp](screenshots/04-ss-curl-nc.png)
+*Screenshot: re-run in an Ubuntu 22.04 container, so the addresses are Docker's network rather than the original VM's.*
 
 ## 9. `hostname`, `/etc/hosts`, `/etc/resolv.conf`
 
@@ -514,6 +526,9 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 $ timeout 2 bash -c '</dev/tcp/google.com/443' && echo 'port 443 OPEN' || echo 'port 443 CLOSED'
 port 443 OPEN
 ```
+
+![hostname, ip neigh, whois, tcpdump](screenshots/05-hosts-arp-whois-tcpdump.png)
+*Screenshot: re-run in an Ubuntu 22.04 container, so the addresses are Docker's network rather than the original VM's.*
 
 ---
 

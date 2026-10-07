@@ -28,6 +28,9 @@ TargetPort:               80/TCP
 Endpoints:                10.244.0.22:80,10.244.0.21:80
 ```
 
+![Healthy app: pods running, curl 200, service endpoints](screenshots/01-healthy-app.png)
+*Screenshot: the same commands re-run in namespace `s14` on the same minikube cluster. Names, IPs and ages differ from the text above.*
+
 ## 2. Broken pod (image problem)
 
 ```console
@@ -68,6 +71,9 @@ NAME                 READY   STATUS    RESTARTS   AGE
 project-broken-pod   1/1     Running   0          1s
 ```
 
+![Broken pod: ErrImagePull, logs useless, fixed with a real tag](screenshots/02-broken-pod-image.png)
+*Screenshot: the same commands re-run in namespace `s14` on the same minikube cluster. Names, IPs and ages differ from the text above.*
+
 ## 3. Service selector problem
 
 ```console
@@ -100,6 +106,9 @@ Selector:                 app=wrong-app
 Endpoints:
 ```
 
+![Selector patched to wrong-app: no endpoints, curl exit 7, DNS still resolves](screenshots/03-service-selector-broken.png)
+*Screenshot: the same commands re-run in namespace `s14` on the same minikube cluster. Names, IPs and ages differ from the text above.*
+
 DNS still resolves and the Service still has its IP. Only the endpoints are empty, so curl fails
 with exit 7 (connection refused). Labels say `app=troubleshooting-app` and the selector says
 `app=wrong-app`. Re-applying the original `service.yaml`:
@@ -115,6 +124,9 @@ troubleshooting-service   10.244.0.21:80,10.244.0.22:80   32s
 $ kubectl exec client -- curl -s -m 4 -o /dev/null -w 'HTTP %{http_code}\n' http://troubleshooting-service
 HTTP 200
 ```
+
+![Selector restored: endpoints back, HTTP 200](screenshots/04-service-selector-fixed.png)
+*Screenshot: the same commands re-run in namespace `s14` on the same minikube cluster. Names, IPs and ages differ from the text above.*
 
 ### Troubleshooting table
 
@@ -139,6 +151,9 @@ fail-3-pending-pod       0/1     Pending        0            5s
 fail-4-dns-failure-pod   1/1     Running        0            5s
 fail-5-oomkilled-pod     0/1     OOMKilled      1 (4s ago)   5s
 ```
+
+![triage_all.sh deploying the 5 broken pods](screenshots/05-triage-gauntlet-carnage.png)
+*Screenshot: the same commands re-run in namespace `s14` on the same minikube cluster. Names, IPs and ages differ from the text above.*
 
 ### Diagnosis
 
@@ -191,6 +206,9 @@ $ kubectl describe pod fail-5-oomkilled-pod | grep -E -A5 'Last State'
 ```
 Exit 137 = 128 + 9 (SIGKILL from the kernel OOM killer). The comment in the YAML says it
 allocates "200MB", but the loop is `range(100)` × 10 MiB = **1000 MiB**, against a 20Mi limit.
+
+![Diagnosing each of the 5 pods](screenshots/06-triage-diagnosis.png)
+*Screenshot: the same commands re-run in namespace `s14` on the same minikube cluster. Names, IPs and ages differ from the text above.*
 
 ### Fixes, and one fix that was not a fix
 
@@ -265,6 +283,9 @@ fail-3-pending-pod       1/1     Running     0          2m40s
 fail-4-dns-failure-pod   1/1     Running     0          9s
 fail-5-oomkilled-pod     0/1     Completed   0          2m40s
 ```
+
+![All 5 fixed: postgres-db reachable, OOM job completes](screenshots/07-triage-all-fixed.png)
+*Screenshot: a fresh run in namespace `s14`. This time I waited for Postgres to be Ready before creating the client, so scenario 4 passed on the first try.*
 
 `fail-5` is meant to show `Completed`: it is a one-shot job, now with `restartPolicy: OnFailure`.
 

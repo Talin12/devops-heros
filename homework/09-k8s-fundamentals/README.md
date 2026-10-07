@@ -75,6 +75,9 @@ kube-public       Active   2d5h
 kube-system       Active   2d5h
 ```
 
+![Cluster and control-plane components](screenshots/01-cluster-and-components.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs and ages differ from the text above.*
+
 ### What each of those components actually does
 
 | Component | Role | Notes from the output above |
@@ -146,6 +149,9 @@ field and reacted. That is the level-triggered reconciliation model the whole sy
 and it is why `kubectl describe` is the first thing to run when something is stuck - the Events
 tell you *which component* stopped making progress.
 
+![A first pod and its Events](screenshots/02-first-pod-events.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs and ages differ from the text above.*
+
 ### `kubectl explain` - the docs are in the binary
 
 ```console
@@ -202,6 +208,9 @@ replacement. Pods are disposable, and the guarantee is on the *count*, not on an
 
 This is why you almost never create a bare Pod outside of a debugging session.
 
+![Bare pod vs Deployment pod](screenshots/03-bare-pod-vs-deployment.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs and ages differ from the text above.*
+
 ---
 
 ## Task 5: The ownership chain
@@ -239,6 +248,9 @@ behind rolling updates and rollbacks, both of which I work through in
 
 The `ownerReferences` field is also what makes `kubectl delete deployment` clean up everything
 underneath it - garbage collection follows those pointers down.
+
+![Deployment → ReplicaSet → Pod](screenshots/04-ownership-chain.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs and ages differ from the text above.*
 
 ---
 

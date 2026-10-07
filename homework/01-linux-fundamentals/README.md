@@ -147,6 +147,9 @@ $ rm -f softlink.txt dirlink hardlink.txt; rmdir mydir; ls -l
 total 0
 ```
 
+![Soft link vs hard link](screenshots/01-soft-vs-hard-links.png)
+*Screenshot: the same commands re-run in an Ubuntu 22.04 container.*
+
 ### What the output proves
 
 * `original.txt` and `hardlink.txt` both show inode 1038958 and link count 2 - they are two names for one file.
@@ -298,6 +301,9 @@ gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologi
 nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
 _apt:x:100:65534::/nonexistent:/usr/sbin/nologin
 ```
+
+![useradd vs adduser](screenshots/02-useradd-vs-adduser.png)
+*Screenshot: the same commands re-run in an Ubuntu 22.04 container.*
 
 ### What the output proves
 
@@ -544,6 +550,9 @@ Sep 03 09:30:33 c737b4436fd2 systemd[1]: Stopped A high performance web server a
 Sep 03 09:30:33 c737b4436fd2 systemd[1]: Starting A high performance web server and a reverse proxy server...
 Sep 03 09:30:33 c737b4436fd2 systemd[1]: Started A high performance web server and a reverse proxy server.
 ```
+
+![journalctl on a systemd host](screenshots/03-journalctl-nginx.png)
+*Screenshot: re-run in an Ubuntu 22.04 container with systemd as PID 1. The `-p err` lines are real kernel OOM kills from my Kubernetes OOM lab, because containers share the host kernel's log.*
 
 ### What the output proves
 
@@ -909,6 +918,10 @@ var
 ```
 
 ---
+
+![Cheat sheet commands](screenshots/04-cheat-sheet-commands.png)
+*Screenshot: the same commands re-run in an Ubuntu 22.04 container.*
+
 
 ## Interview Questions & Answers
 

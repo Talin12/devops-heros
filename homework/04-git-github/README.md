@@ -81,6 +81,9 @@ $ git log --oneline
 6cdbffd Initial commit: add notes.txt
 ```
 
+![git commit -m vs git commit -a -m](screenshots/01-commit-m-vs-commit-a-m.png)
+*Screenshot: the same steps re-run in an Ubuntu 22.04 container. Commit hashes differ from the text above because every run creates new commits.*
+
 ### Reading the output
 
 1. After editing the tracked file `notes.txt`, `git status --short` shows ` M notes.txt` - M in the second column = modified in the working directory, not staged.
@@ -216,6 +219,9 @@ $ git branch -v
   feature 395ad52 feature: commit C - experimental dark mode
 * main    f304d19 feature: commit B - IMPORTANT bugfix (this one will be cherry-picked)
 ```
+
+![git cherry-pick](screenshots/02-cherry-pick.png)
+*Screenshot: the same steps re-run in an Ubuntu 22.04 container. Commit hashes differ from the text above because every run creates new commits.*
 
 ### Reading the output
 

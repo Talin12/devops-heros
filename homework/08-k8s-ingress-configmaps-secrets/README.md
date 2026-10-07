@@ -184,6 +184,9 @@ Two things worth pointing at:
   **Base64 is encoding, not encryption.** The actual protection is RBAC on `get secret`, plus
   encryption-at-rest on etcd.
 
+![ConfigMap, Secret and the echo -n newline](screenshots/01-configmap-and-secret.png)
+*Screenshot: the lab redeployed on the same minikube cluster and the commands re-run. Pod names and IPs differ from the text above.*
+
 ---
 
 ## Part 3: Backend - injecting ConfigMap + Secret
@@ -242,6 +245,9 @@ not about how the app consumes them.
 | Grabs | every key in the object | one named key |
 | Name control | key name = env var name, no choice | you pick the env var name |
 | Good for | bulk non-secret config | credentials, where you want to be explicit about each one |
+
+![ConfigMap and Secret injected into the backend pod](screenshots/02-env-injected-into-pod.png)
+*Screenshot: the lab redeployed on the same minikube cluster and the commands re-run. Pod names and IPs differ from the text above.*
 
 ---
 
@@ -375,6 +381,15 @@ decision is made on the `Host` header, not on the address.
 
 Test 2 is also an end-to-end confirmation of Parts 1-3: those values came out of the ConfigMap and
 the Secret, through the pod's environment, into an HTTP response body.
+
+![Ingress path-based routing](screenshots/03-ingress-routing.png)
+*Screenshot: the lab redeployed on the same minikube cluster and the commands re-run. Pod names and IPs differ from the text above.*
+
+| `http://yatri.local/` → frontend | `http://yatri.local/api/` → backend |
+|---|---|
+| ![Frontend through the Ingress](screenshots/04-browser-frontend-via-ingress.png) | ![Backend through the Ingress](screenshots/05-browser-backend-api-via-ingress.png) |
+
+*Browser screenshots (Chrome) through the same Ingress, with `yatri.local` mapped to the port-forwarded controller.*
 
 ---
 

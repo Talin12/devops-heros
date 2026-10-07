@@ -102,6 +102,9 @@ $ helm template notes-dev notes-chart --set replicaCount=5 --set image.tag=1.27 
           image: "nginx:1.27"
 ```
 
+![helm lint and helm template with dev, prod and --set values](screenshots/01-lint-and-template.png)
+*Screenshot: the same commands re-run in namespace `s15` on the same minikube cluster. Names, IPs and timestamps differ from the text above.*
+
 Precedence, lowest to highest: `values.yaml` < `-f values-prod.yaml` < `--set`.
 
 ## 3. Install
@@ -135,6 +138,9 @@ $ minikube ssh -- curl -s -o /dev/null -w 'NodePort-30090-HTTP-%{http_code}' loc
 NodePort-30090-HTTP-200
 ```
 
+![helm install, resources, env vars and NodePort check](screenshots/02-install.png)
+*Screenshot: the same commands re-run in namespace `s15` on the same minikube cluster. Names, IPs and timestamps differ from the text above.*
+
 (Curling `$(minikube ip):30090` from the Mac returned `000`. With the docker driver on macOS, the
 node IP is not routable from the host, so I tested the NodePort from inside the node.)
 
@@ -166,6 +172,9 @@ REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCR
 2       	Wed Oct  7 18:09:46 2026	deployed  	notes-chart-0.1.0	1.0        	Upgrade complete
 ```
 
+![Upgrade to values-prod.yaml: 3 replicas on nginx:1.25, history](screenshots/03-upgrade-prod-and-history.png)
+*Screenshot: the same commands re-run in namespace `s15` on the same minikube cluster. Names, IPs and timestamps differ from the text above.*
+
 ## 6. Bad upgrade - Helm says "deployed"
 
 ```console
@@ -192,6 +201,9 @@ app-still-serving-HTTP-200
 $ kubectl get deploy notes-dev-deploy -o jsonpath='strategy maxSurge={.spec.strategy.rollingUpdate.maxSurge} maxUnavailable={.spec.strategy.rollingUpdate.maxUnavailable}{"\n"}'
 strategy maxSurge=25% maxUnavailable=25%
 ```
+
+![Bad image tag: Helm says deployed, one pod in ImagePullBackOff, app still serving](screenshots/04-bad-upgrade-reports-deployed.png)
+*Screenshot: the same commands re-run in namespace `s15` on the same minikube cluster. Names, IPs and timestamps differ from the text above.*
 
 Two things differ from the expected output in the assignment:
 
@@ -230,6 +242,9 @@ REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCR
 4       	Wed Oct  7 18:11:18 2026	deployed  	notes-chart-0.1.0	1.0        	Rollback to 2
 ```
 
+![helm rollback to revision 2 creates revision 4](screenshots/05-rollback-and-history.png)
+*Screenshot: the same commands re-run in namespace `s15` on the same minikube cluster. Names, IPs and timestamps differ from the text above.*
+
 A rollback does not delete revision 3. It creates **revision 4** with revision 2's content, so the
 history is append-only.
 
@@ -248,6 +263,9 @@ REVISION	UPDATED                 	STATUS    	CHART            	APP VERSION	DESCR
 5       	Wed Oct  7 18:11:19 2026	failed    	notes-chart-0.1.0	1.0        	Upgrade "notes-dev" failed: resource Deployment/s15/notes-dev-deploy not ready. status: InProgress, message: Updated: ...
 6       	Wed Oct  7 18:12:04 2026	deployed  	notes-chart-0.1.0	1.0        	Rollback to 4
 ```
+
+![--wait --rollback-on-failure: upgrade fails and rolls itself back](screenshots/06-safe-upgrade-rollback-on-failure.png)
+*Screenshot: the same commands re-run in namespace `s15` on the same minikube cluster. Names, IPs and timestamps differ from the text above.*
 
 `--wait` makes Helm actually wait for readiness, and `--rollback-on-failure` (Helm 4's name for
 Helm 3's `--atomic`) undoes the release on its own. This is the flag set a CI pipeline should use.
@@ -298,6 +316,9 @@ $ kubectl get deploy notes-dev-deploy -o jsonpath='{.spec.template.metadata.anno
 41f9b88c185a82ef0b101645c30d0c6d889a8196eae3f7bb7e8ff57145b5fb71
 ```
 
+![checksum/config annotation changing with the ConfigMap and rolling the pods](screenshots/07-checksum-annotation-rolls-pods.png)
+*Screenshot: re-run with chart v0.2.0 already in place, so these are revisions 7 and 8 rather than 8 and 9. The checksums are identical to the ones above.*
+
 The hash changes, so the pod template changes, so the Deployment rolls new pods that read the new
 env.
 
@@ -320,6 +341,9 @@ $ kubectl get all,configmap
 NAME                         DATA   AGE
 configmap/kube-root-ca.crt   1      5m17s
 ```
+
+![helm package and helm uninstall](screenshots/08-package-and-uninstall.png)
+*Screenshot: re-run in namespace `s15`, packaged into a `mktemp -d` directory instead of `/tmp`. The pods were still terminating when `kubectl get` ran straight after the uninstall.*
 
 ## What I took away
 

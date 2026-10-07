@@ -138,6 +138,9 @@ Both containers stopped. The *only* difference is the exit code, and `lifecycle-
 program, same crash; the restart policy alone decides whether you see `Failed` or
 `CrashLoopBackOff`.
 
+![Pod lifecycle states, Pending events, CrashLoop logs, exit codes](screenshots/01-pod-lifecycle-states.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
+
 ### Liveness probe - a restart you asked for
 
 The container touches `/tmp/healthy`, sleeps 20s, then deletes it. The probe tests for that file.
@@ -213,6 +216,9 @@ $ kubectl rollout history rs/yatri-backend-rs
 error: no history viewer has been implemented for "ReplicaSet.apps"
 ```
 
+![ReplicaSet scaling and the missing rollout history](screenshots/02-replicaset-scale-no-history.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
+
 **That error is the whole point of the exercise.** A ReplicaSet maintains a replica count and
 nothing more - it has no concept of revisions, no rollout, no rollback. Change its image and it
 does *not* gradually replace pods; you would have to delete them yourself.
@@ -236,6 +242,9 @@ node count: 1
 
 [Thu Sep 17 18:26:24 UTC 2026] Collecting host system metrics on node-logging-agent-rjn6v
 ```
+
+![DaemonSet: one pod per node](screenshots/03-daemonset-one-per-node.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
 
 `DESIRED 1` because the cluster has exactly 1 node. Nobody wrote `replicas: 1` - **a DaemonSet has
 no `replicas` field at all.** Its desired count *is* the node count, so adding a node automatically
@@ -329,6 +338,9 @@ Name:	mysql-0.mysql.default.svc.cluster.local
 Address: 10.244.0.39
 ```
 
+![StatefulSet ordinals, per-pod PVCs and per-pod DNS](screenshots/04-statefulset-ordinals-and-pvcs.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
+
 `mysql-0` is 40s old and `mysql-1` is 0s old - ordered creation, visible in the AGE column.
 Names are `mysql-0`/`mysql-1`, not the random hashes a Deployment produces.
 
@@ -353,6 +365,9 @@ pvc=mysql-persistent-storage-mysql-0
 msg
 written to mysql-0
 ```
+
+![StatefulSet pod deleted: new UID, same name, same PVC, data intact](screenshots/05-statefulset-data-survives-delete.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
 
 Different UID - it is genuinely a **new pod**, exactly like the Session 9 self-healing demo. But
 unlike a Deployment's replacement, it came back with the *same name* and was reattached to the
@@ -407,6 +422,9 @@ REVISION  CHANGE-CAUSE
 2         <none>
 3         <none>
 ```
+
+![Rolling update v1 to v2, then rollback to revision 1](screenshots/06-rolling-update-and-rollback.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
 
 Two things worth noticing:
 - The **same** ReplicaSet hash `86d7d44d5b` came back - it reused the existing object.
@@ -473,6 +491,9 @@ green IPs:      10.244.0.65 10.244.0.63 10.244.0.67          <- exact match
 myapp-service   10.244.0.62:80,10.244.0.64:80,10.244.0.66:80
 ```
 
+![Blue-green cutover by patching the Service selector](screenshots/07-blue-green-cutover.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
+
 The endpoint list swaps wholesale. **No pod was created or destroyed during the cutover** - that is
 why rollback is instant and total, and why blue-green is the strategy of choice when a bad release
 must be undone in seconds. The cost is running 2× the infrastructure for the whole window.
@@ -496,6 +517,9 @@ Then 200 requests through the Service from inside the cluster:
      16 CANARY v2
     184 STABLE v1
 ```
+
+![Canary: 9 stable + 1 canary, 200 requests through the Service](screenshots/08-canary-traffic-split.png)
+*Screenshot: a fresh run of the same 200 requests. This time it came out at exactly 20 canary / 180 stable (10%), against 8% in the run above. That's the sampling noise described below.*
 
 **8% canary against the 10% the replica ratio predicts.** kube-proxy picks a backend at random per
 connection, so with n=200 that spread is exactly what you would expect (±2pp is well within
@@ -552,6 +576,9 @@ Error from server (NotFound): deployments.apps "selector-error-demo" not found
 This one never reaches the cluster at all - the **API server** rejects it during validation, so
 nothing is created and the exit code is non-zero (which is what makes it safe to gate CI on
 `kubectl apply --dry-run=server`).
+
+![Broken image and selector mismatch](screenshots/09-troubleshooting-image-and-selector.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. Pod names, IPs and ages differ from the text above.*
 
 Worth contrasting with the Session 11 empty-endpoints drill: a *Service* with a selector matching
 nothing is perfectly valid and gets created happily, failing silently at runtime instead. Deployment

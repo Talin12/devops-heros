@@ -172,6 +172,9 @@ total 8
 ===============================================
 ```
 
+![Running system_info.sh](screenshots/01-run-system-info.png)
+*Screenshot: the same script re-run in an Ubuntu 22.04 container. The two `read -p` answers are typed in by `expect`.*
+
 ---
 
 ## Files the script produced
@@ -187,6 +190,9 @@ USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root           1  0.0  0.0   3876  2724 pts/0    Ss+  09:40   0:00 /bin/bash ./system_info.sh
 root          17  0.0  0.0   6444  2360 pts/0    R+   09:40   0:00 ps aux
 ```
+
+![Files the script produced](screenshots/02-files-produced.png)
+*Screenshot: the files from the run above.*
 
 ---
 

@@ -60,6 +60,9 @@ web-service-clusterip   10.244.0.88:80,10.244.0.90:80,10.244.0.91:80   80s
 HTTP 200
 ```
 
+![ClusterIP service, endpoints, and curl by name and FQDN](screenshots/01-clusterip.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. IPs, node ports and ages differ from the text above.*
+
 Three things in that output:
 
 - **`EXTERNAL-IP <none>`** - this is unreachable from outside the cluster, by design.
@@ -99,6 +102,9 @@ options ndots:5
   looking up an external name like `api.github.com` from inside a pod costs several wasted DNS
   queries before the absolute lookup succeeds - a well-known source of DNS load in busy clusters.
 
+![nslookup of the short name and the pod's resolv.conf](screenshots/02-dns-fqdn-resolv-conf.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. IPs, node ports and ages differ from the text above.*
+
 The full form is `<service>.<namespace>.svc.cluster.local`, which is what you need when calling
 across namespaces, since the search list only covers your own.
 
@@ -129,6 +135,9 @@ http://127.0.0.1:61194
 ! Because you are using a Docker driver on darwin, the terminal needs to be open to run it.
 ```
 
+![NodePort: HTTP 200 from inside the node, timeout from the Mac](screenshots/03-nodeport.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. IPs, node ports and ages differ from the text above.*
+
 Same macOS caveat I hit in [Session 12](../08-k8s-ingress-configmaps-secrets/README.md): with the
 docker driver the node lives inside the Docker VM, so `192.168.49.2:30080` times out from the Mac
 even though it answers `HTTP 200` from inside. `minikube service --url` opens a tunnel and prints a
@@ -154,6 +163,9 @@ clusterIP=10.106.245.174 nodePort=31536
 Service does not implement a load balancer - it asks the *cloud controller manager* to go
 provision one (an AWS ELB, a GCP forwarding rule). Bare minikube has no cloud provider, so nothing
 ever answers and the field stays pending. `minikube tunnel` fakes it if you need one.
+
+![LoadBalancer with EXTERNAL-IP pending](screenshots/04-loadbalancer-pending.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. IPs, node ports and ages differ from the text above.*
 
 Note it also allocated `nodePort=31536` on top of a ClusterIP. The layering is strictly additive:
 
@@ -187,6 +199,9 @@ external-database-service.default.svc.cluster.local	canonical name = nencyravali
 No traffic passes through Kubernetes at all - the pod resolves the name, gets the external host
 back, and connects directly. Which means: **no load balancing, no health checks, and the target
 port is whatever the client asks for.**
+
+![ExternalName: no ClusterIP, no endpoints, just a CNAME](screenshots/05-externalname.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. IPs, node ports and ages differ from the text above.*
 
 Its real use is indirection. Point your app at `database-service` in every environment; in
 production the Service is an ExternalName to an RDS endpoint, in dev it is a normal ClusterIP in
@@ -231,6 +246,9 @@ Name:	web-stateful-2.web-service-headless.default.svc.cluster.local
 Address: 10.244.0.101
 ```
 
+![Headless service returning every pod IP, plus per-pod DNS names](screenshots/06-headless-dns.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. IPs, node ports and ages differ from the text above.*
+
 `<pod>.<headless-service>.<namespace>.svc.cluster.local`. That is what lets clustered software work
 on Kubernetes: a Kafka or Cassandra or MySQL replica needs to address *a specific peer*, not "some
 pod behind a VIP". Random load balancing would be actively wrong for a write to a primary.
@@ -257,6 +275,9 @@ No resources found in default namespace.
 
 The Service was **created without complaint**, got a ClusterIP, and resolves in DNS. It simply
 matches no pods, so connections to it hang or are refused.
+
+![Service with a selector that matches no pods](screenshots/07-empty-endpoints.png)
+*Screenshot: the same manifests re-run on the same minikube cluster. IPs, node ports and ages differ from the text above.*
 
 This is the single most common Service bug, and the diagnosis is always the same three commands:
 

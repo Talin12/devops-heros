@@ -70,6 +70,9 @@ drwxrwxrwx 2 root root 4096 Oct  7 12:08 .
 drwxr-xr-x 1 root root 4096 Oct  7 12:08 ..
 ```
 
+![emptyDir survives a container restart but not a pod delete](screenshots/01-emptydir-container-vs-pod.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
+
 **An `emptyDir` lives exactly as long as the pod, not the container.** That makes it right for
 scratch space and for sharing files between containers in one pod, and wrong for anything you want
 to keep.
@@ -91,6 +94,9 @@ pod/hostpath-demo created
 $ kubectl exec hostpath-demo -- cat /data/host.txt
 hello-from-pod
 ```
+
+![hostPath data survives the pod and is visible on the node](screenshots/02-hostpath-survives-pod.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
 
 The file is on the **node's** disk (`minikube ssh` reads it directly), so it survived. The catch is
 that it only survives *on that node*. On a multi-node cluster a rescheduled pod can land somewhere
@@ -131,6 +137,9 @@ $ kubectl get pvc student-pvc -o jsonpath='storageClassName={.spec.storageClassN
 storageClassName=standard
 ```
 
+![PVC silently bound to a new dynamic PV instead of student-pv](screenshots/03-pvc-binds-to-default-storageclass.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
+
 I never wrote `standard` in the claim. Because minikube has a **default StorageClass**, the
 admission controller filled it in. A claim with class `standard` can only bind to a PV with class
 `standard`, and `student-pv` has none. So the provisioner made a new one.
@@ -161,6 +170,9 @@ persistentvolume/student-pv   1Gi        RWO            Retain           Bound  
 NAME                                STATUS   VOLUME       CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/student-pvc   Bound    student-pv   1Gi        RWO                           <unset>                 3s
 ```
+
+![storageClassName: "" makes the claim bind to student-pv](screenshots/04-pvc-fixed-empty-storageclass.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
 
 Now it binds to `student-pv`. Note the claim asked for **500Mi** and got **1Gi**: binding picks a
 PV that is *at least* as big, and the whole PV goes to that one claim.
@@ -201,6 +213,9 @@ $ minikube ssh -- cat /tmp/student-data/message.txt
 Student: Talin Daga
 ```
 
+![Data survives pod deletion; PV goes to Released with Retain](screenshots/05-pv-data-survives-and-retain.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
+
 The claim is gone and the data is still on disk. The PV goes to `Released`, **not** `Available`. It
 still remembers its old claim (`default/student-pvc`), so a new claim will not bind to it until an
 admin clears `spec.claimRef` by hand. That is on purpose: Kubernetes will not hand someone else's
@@ -226,6 +241,9 @@ $ kubectl get pv $(kubectl get pvc dynamic-pvc -o jsonpath='{.spec.volumeName}')
 $ kubectl delete pvc dynamic-pvc
 persistentvolumeclaim "dynamic-pvc" deleted from default namespace
 ```
+
+![Dynamic provisioning via the standard StorageClass](screenshots/06-storageclass-dynamic-provisioning.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
 
 No PV was written by hand. The claim alone caused one to be created, sized exactly 500Mi this time
 (compare the static case, which got 1Gi). After the claim was deleted, the `pvc-d3fd…` volume
@@ -299,6 +317,9 @@ NAME                ENDPOINTS        AGE
 readiness-service   10.244.0.13:80   24s
 ```
 
+![Readiness probe failing removes the pod from the Service, then recovers](screenshots/07-readiness-probe-broken.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
+
 Traffic comes back on its own, with no restart.
 
 ### Breaking liveness - the container is restarted, and that fixes it
@@ -319,6 +340,9 @@ $ kubectl exec liveness-demo -- ls /usr/share/nginx/html/
 50x.html
 index.html
 ```
+
+![Liveness probe failing restarts the container and restores index.html](screenshots/08-liveness-probe-restart.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
 
 Three failures (`failureThreshold: 3`), then kubelet killed and restarted the container. And
 `index.html` is **back**: the new container got a fresh copy of the image's filesystem, so the
@@ -383,6 +407,9 @@ $ for p in $(kubectl get pods -n production-webapp -l app=web-app -o name); do e
 pod/web-app-d45775485-pk9b4: Student: Talin Daga (24BCS10321)
 pod/web-app-d45775485-xvlth: Student: Talin Daga (24BCS10321)
 ```
+
+![Mini project: data on the PVC seen by the replacement pod and the other replica](screenshots/09-mini-project-pvc-shared.png)
+*Screenshot: the same commands re-run on the same minikube cluster. Names, IPs, times and ages differ from the text above.*
 
 The replacement pod `pk9b4` sees the file. So does the *other* replica `xvlth`, even though the
 claim is `ReadWriteOnce`. **RWO means one *node*, not one pod.** On single-node minikube every
@@ -461,6 +488,9 @@ web-app-d45775485-xvlth   29m          8Mi
 $ kubectl describe hpa web-app-hpa -n production-webapp | sed -n '/Events:/,$p' | grep -v Failed
   Normal   SuccessfulRescale             2m51s              horizontal-pod-autoscaler  New size: 3; reason: cpu resource utilization (percentage of request) above target
 ```
+
+![HPA at 30%: load generator drives CPU above target, 2 → 3 replicas](screenshots/10-hpa-scale-out-at-30pct.png)
+*Screenshot: a fresh run of the same test. This time CPU settled at 42% before the scale-out, so ceil(2 × 42 / 30) = 3, the same result as below.*
 
 The arithmetic matches the HPA formula exactly:
 
