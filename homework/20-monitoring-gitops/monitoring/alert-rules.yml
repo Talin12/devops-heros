@@ -1,0 +1,10 @@
+groups:
+  - name: homework
+    rules:
+      - alert: TargetDown
+        expr: up == 0
+        for: 15s
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} target is down"

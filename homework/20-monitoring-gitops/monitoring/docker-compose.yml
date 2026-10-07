@@ -1,0 +1,27 @@
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    container_name: hw20-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: hw20-node-exporter
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    container_name: hw20-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Viewer"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus

@@ -28,8 +28,11 @@ README was actually executed and the output pasted verbatim - no invented output
 | 13 | Kubernetes Storage, HPA & Probes | Session 13 | [`13-k8s-storage-hpa-probes/README.md`](13-k8s-storage-hpa-probes/README.md) |
 | 14 | Kubernetes Troubleshooting | Session 14 | [`14-k8s-troubleshooting/README.md`](14-k8s-troubleshooting/README.md) |
 | 15 | Helm | Session 15 | [`15-helm/README.md`](15-helm/README.md) |
+| 16 | CI/CD & GitHub Actions | Session 16 | [`16-github-actions/README.md`](16-github-actions/README.md) |
+| 17 | Complete CI/CD & DevSecOps | Session 17 | [`17-devsecops/README.md`](17-devsecops/README.md) |
 | 18 | Terraform & Infrastructure as Code | Session 18 | [`18-terraform-iac/README.md`](18-terraform-iac/README.md) |
 | 19 | Cloud & Terraform in Action | Session 19 | [`19-cloud-terraform/README.md`](19-cloud-terraform/README.md) |
+| 20 | Monitoring, Observability & GitOps | Session 20 | [`20-monitoring-gitops/README.md`](20-monitoring-gitops/README.md) |
 
 ---
 
