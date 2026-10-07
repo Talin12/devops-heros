@@ -1,0 +1,13 @@
+# ---- The SAME React app, built WITHOUT multi-stage ----
+# Node, npm, the whole node_modules tree and the source all ship to production.
+# Build with:
+#   docker build -f size-comparison/Dockerfile.single-stage \
+#                -t react-single-stage ../05-docker-fundamentals/React-app
+FROM node:20-alpine
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+EXPOSE 4173
+CMD ["npx", "vite", "preview", "--host", "0.0.0.0"]
