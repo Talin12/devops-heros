@@ -25,6 +25,11 @@ README was actually executed and the output pasted verbatim - no invented output
 | 9 | Kubernetes Fundamentals | Session 9 | [`09-k8s-fundamentals/README.md`](09-k8s-fundamentals/README.md) |
 | 10 | Kubernetes Pods, ReplicaSets & Deployments | Session 10 | [`10-k8s-core-objects/README.md`](10-k8s-core-objects/README.md) |
 | 11 | Kubernetes Networking & Services | Session 11 | [`11-k8s-services/README.md`](11-k8s-services/README.md) |
+| 13 | Kubernetes Storage, HPA & Probes | Session 13 | [`13-k8s-storage-hpa-probes/README.md`](13-k8s-storage-hpa-probes/README.md) |
+| 14 | Kubernetes Troubleshooting | Session 14 | [`14-k8s-troubleshooting/README.md`](14-k8s-troubleshooting/README.md) |
+| 15 | Helm | Session 15 | [`15-helm/README.md`](15-helm/README.md) |
+| 18 | Terraform & Infrastructure as Code | Session 18 | [`18-terraform-iac/README.md`](18-terraform-iac/README.md) |
+| 19 | Cloud & Terraform in Action | Session 19 | [`19-cloud-terraform/README.md`](19-cloud-terraform/README.md) |
 
 ---
 

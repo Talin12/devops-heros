@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fail-5-oomkilled-pod
+  labels:
+    tier: triage-gauntlet
+    scenario: oomkilled
+spec:
+  # A one-shot job: restarting it after a clean exit is pointless.
+  restartPolicy: OnFailure
+  containers:
+    - name: memory-leaker
+      image: python:3.11-alpine
+      command:
+        - "python3"
+        - "-c"
+        - |
+          # Fix 1: the original loop was range(100) x 10 MiB = 1000 MiB, not the
+          # "200MB" its comment claimed. Allocate what the job actually needs.
+          import resource
+          print("Allocating 100 MiB...", flush=True)
+          chunks = [b"x" * (10 * 1024 * 1024) for _ in range(10)]
+          peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss // 1024
+          print(f"Done. Peak RSS: {peak} MiB", flush=True)
+      resources:
+        # Fix 2: a limit with headroom above the real peak, and a matching request.
+        requests:
+          memory: "128Mi"
+        limits:
+          memory: "192Mi"
