@@ -1,9 +1,11 @@
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
+fastapi==0.142.2
+# pinned explicitly: 0.41.3 (pulled in by fastapi 0.115.6) had CVE-2025-62727, CVE-2026-48818, CVE-2026-54283
+starlette==1.7.0
+uvicorn[standard]==0.54.0
 sqlalchemy==2.0.36
 psycopg[binary]==3.2.3
 pydantic-settings==2.7.1
-prometheus-fastapi-instrumentator==7.0.2
+prometheus-fastapi-instrumentator==8.1.0
 alembic==1.14.0
 pytest==8.3.4
 httpx==0.28.1

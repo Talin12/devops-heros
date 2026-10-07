@@ -10,6 +10,12 @@ spec:
     metadata:
       labels: {app: taskboard-backend}
     spec:
+      # The container runs `alembic upgrade head` first; without this it races
+      # PostgreSQL on a fresh install and crash-loops until the DB is up.
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z {{ .Values.postgres.host }} 5432; do echo waiting for postgres; sleep 2; done"]
       containers:
         - name: backend
           image: "{{ .Values.backend.image }}:{{ .Values.backend.tag }}"
