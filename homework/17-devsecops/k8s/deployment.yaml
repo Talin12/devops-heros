@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: session17-python
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: session17-python
+  template:
+    metadata:
+      labels:
+        app: session17-python
+    spec:
+      containers:
+        - name: session17-python
+          image: ghcr.io/talin12/devops-heros-hw17:__IMAGE_TAG__
+          imagePullPolicy: IfNotPresent     # image is side-loaded into kind by the pipeline
+          ports:
+            - containerPort: 5001

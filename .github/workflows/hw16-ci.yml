@@ -1,0 +1,112 @@
+name: HW16 - CI Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "homework/16-github-actions/**"
+      - ".github/workflows/hw16-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "homework/16-github-actions/**"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: homework/16-github-actions
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: homework/16-github-actions/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -v --junitxml=test-results.xml
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-py${{ matrix.python-version }}
+          path: homework/16-github-actions/test-results.xml
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build application
+        run: |
+          chmod +x build.sh
+          ./build.sh
+          echo "Commit: ${{ github.sha }}" >> build/build-info.txt
+          echo "Run:    ${{ github.run_number }}" >> build/build-info.txt
+
+      - name: Show build output
+        run: cat build/build-info.txt
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: calculator-build
+          path: homework/16-github-actions/build/
+
+  security-check:
+    name: Security Check
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for sensitive files
+        run: |
+          if find . -type f \( -name ".env" -o -name "*.pem" -o -name "*.key" \) | grep -q .; then
+            echo "Potential sensitive file found."
+            exit 1
+          fi
+          echo "No common sensitive files found."
+
+      - name: Use a secret (GITHUB_TOKEN, created by GitHub for every run)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The token is passed through env and never echoed; gh reads GH_TOKEN itself.
+          gh api repos/${{ github.repository }} --jq '"authenticated API call OK - repo: \(.full_name), visibility: \(.visibility)"'
+
+  deploy:
+    name: Deploy (main only)
+    needs: [build, security-check]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: homework-demo
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: calculator-build
+          path: release
+
+      - name: "Deploy"
+        working-directory: release
+        run: |
+          ls -la
+          cat build-info.txt
+          python3 -c "import calculator as c; print('smoke test 10/4 =', c.divide(10, 4))"

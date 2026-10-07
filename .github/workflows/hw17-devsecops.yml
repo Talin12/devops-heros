@@ -1,0 +1,146 @@
+name: HW17 - DevSecOps Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "homework/17-devsecops/**"
+      - ".github/workflows/hw17-devsecops.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "homework/17-devsecops/**"
+  workflow_dispatch:
+
+env:
+  APP_DIR: homework/17-devsecops
+  IMAGE: ghcr.io/talin12/devops-heros-hw17
+
+defaults:
+  run:
+    working-directory: homework/17-devsecops
+
+jobs:
+  # ---------------------------------------------------------------- quality
+  test:
+    name: Unit Tests + Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - run: pytest --cov=app --cov-report=term-missing --cov-fail-under=65
+
+  # ---------------------------------------------------------------- security gates
+  sast:
+    name: SAST - Bandit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install bandit
+      - name: Full report (informational)
+        run: bandit -r app -f txt || true
+      - name: Gate - fail on HIGH severity
+        run: bandit -r app --severity-level high
+
+  sca:
+    name: SCA - pip-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pip-audit
+      - name: Gate - fail on any known-vulnerable dependency
+        run: pip-audit -r requirements.txt --desc
+
+  secret-scan:
+    name: Secret Scan - Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gate - fail on any detected secret
+        working-directory: .
+        run: |
+          docker run --rm -v "$PWD/$APP_DIR:/scan" ghcr.io/gitleaks/gitleaks:latest \
+            dir /scan --no-banner --redact --verbose
+
+  # ---------------------------------------------------------------- build, scan, push
+  image:
+    name: Build + Trivy Scan + Push to GHCR
+    needs: [test, sast, sca, secret-scan]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t $IMAGE:${{ github.sha }} .
+
+      - name: Image runs as non-root
+        run: docker run --rm --entrypoint id $IMAGE:${{ github.sha }}
+
+      - name: Install Trivy
+        working-directory: .
+        run: |
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq trivy
+
+      - name: Trivy report (HIGH + CRITICAL, informational)
+        run: trivy image --no-progress --severity HIGH,CRITICAL $IMAGE:${{ github.sha }}
+
+      - name: Gate - fail on fixable CRITICAL
+        run: trivy image --no-progress --severity CRITICAL --ignore-unfixed --exit-code 1 $IMAGE:${{ github.sha }}
+
+      - name: Push to GitHub Container Registry
+        if: github.event_name == 'push'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker tag $IMAGE:${{ github.sha }} $IMAGE:latest
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+  # ---------------------------------------------------------------- deploy
+  deploy:
+    name: Deploy to Kubernetes (kind)
+    needs: image
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+
+      - name: Pull the exact image that passed the gates
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker pull $IMAGE:${{ github.sha }}
+          kind load docker-image $IMAGE:${{ github.sha }} --name chart-testing
+
+      - name: Deploy
+        run: |
+          sed -i "s|__IMAGE_TAG__|${{ github.sha }}|g" k8s/deployment.yaml
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/session17-python --timeout=90s
+          kubectl get pods -o wide
+
+      - name: Smoke test
+        run: |
+          kubectl port-forward service/session17-python 5001:80 &
+          sleep 3
+          curl -sf http://localhost:5001/api/status
+          echo
+          curl -s http://localhost:5001 | grep -o '<title>.*</title>'
